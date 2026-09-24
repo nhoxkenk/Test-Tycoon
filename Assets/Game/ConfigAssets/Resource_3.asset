@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 457db7f7bc3a3fd4ca450c36dcfa0989, type: 3}
+  m_Name: Resource_3
+  m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.ResourceConfig
+  resourceId: clay
+  displayName: Clay
+  icon: {fileID: 21300000, guid: 40ac2c9f66ad60340ae5ae80eeff9656, type: 3}
+  unlockCost: 20000
+  buildSeconds: 3
+  harvestSeconds: 2
+  regrowSeconds: 3
+  batchSaleValue: 6000
+  productionText: 24.0k/min
+  upgradeCost: 8000
+  profitPercentPerLevel: 20

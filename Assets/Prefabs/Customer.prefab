@@ -1310,6 +1310,7 @@ GameObject:
   - component: {fileID: 6540654423376592508}
   - component: {fileID: 7690613957633319610}
   - component: {fileID: 8460677196407964516}
+  - component: {fileID: 3895487435584954550}
   m_Layer: 0
   m_Name: Customer
   m_TagString: Untagged
@@ -1368,6 +1369,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aa38e28766a681449c5edb92b19ce86, type: 3}
   m_Name:
   m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.CustomerActor
+--- !u!114 &3895487435584954550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5081378640111839596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36c208422425189429a6edad97b3295b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.ActorCarryView
+  tomatoPrefab: {fileID: 431050899201095724, guid: 7f43ad0a1dc9942deb52963a8ee6e6f4, type: 3}
+  carryPoints:
+  - {fileID: 4363290341290070341}
+  - {fileID: 4142606308031639131}
+  - {fileID: 1128725025561736181}
 --- !u!1 &5693225996506118139
 GameObject:
   m_ObjectHideFlags: 0

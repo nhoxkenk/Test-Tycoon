@@ -2,7 +2,7 @@
 
 [← Mục lục](README.md)
 
-**Phạm vi đã thống nhất để thảo luận:** dùng reflection và `Activator.CreateInstance` để tạo class C# thường (không phải `MonoBehaviour`). `GameBootstrap` cấp các dependency đến từ Unity/scene và khởi động composition. Tài liệu này quy định cơ chế và ranh giới; chưa yêu cầu triển khai code.
+**Trạng thái:** phương án tùy chọn, chưa triển khai. DI thuần bằng constructor ở Bootstrap đang đáp ứng phần 01–09. Bốn resource chỉ khác `ResourceConfig` ScriptableObject và dùng chung service/visual, nên chưa có lý do tạo class bằng reflection. Chỉ đánh giá phương án dưới đây nếu resource hoặc upgrade có nhiều implementation hành vi riêng cần khám phá theo contract/key.
 
 ## Vai trò
 

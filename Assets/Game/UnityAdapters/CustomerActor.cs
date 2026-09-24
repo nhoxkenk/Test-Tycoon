@@ -14,6 +14,7 @@ namespace Farm.UnityAdapters
 
         private IActorNavigation navigation;
         private Animator animator;
+        private ActorCarryView carryView;
         private CustomerContext context;
         private ActorStateMachine<CustomerState, CustomerContext> machine;
         private bool returnNotified;
@@ -30,7 +31,10 @@ namespace Farm.UnityAdapters
         private void Awake()
         {
             animator = GetComponentInChildren<Animator>(true);
+            carryView = GetComponent<ActorCarryView>();
         }
+
+        public void ShowCargo(int quantity, Vector3[] fromPositions = null) => carryView?.Show(quantity, fromPositions);
 
         public bool Initialize(int actorId, int slotId, WorldPoint start, WorldPoint table, WorldPoint exit, IActorNavigation actorNavigation)
         {
@@ -86,6 +90,7 @@ namespace Farm.UnityAdapters
 
         public void ResetForPool()
         {
+            carryView?.Show(0);
             machine?.Stop();
             navigation?.Stop();
             machine = null;

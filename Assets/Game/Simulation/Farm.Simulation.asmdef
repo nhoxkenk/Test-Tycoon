@@ -1,7 +1,7 @@
 {
   "name": "Farm.Simulation",
   "rootNamespace": "Farm.Simulation",
-  "references": ["Farm.Actors"],
+  "references": ["Farm.Actors", "Farm.Economy", "Farm.Farming"],
   "autoReferenced": false,
   "noEngineReferences": true
 }

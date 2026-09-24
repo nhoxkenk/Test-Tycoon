@@ -2,7 +2,7 @@
 
 [← Mục lục](README.md)
 
-**Trạng thái:** đề xuất để phân tích và thảo luận; chưa phải quyết định triển khai. Bootstrap Root và việc không dùng VContainer đã chốt; cơ chế reflection factory được ghi ở [phần 13](13-reflection-factory.md).
+**Trạng thái:** graph asmdef dưới đây đã triển khai cho phần 01–09. Bootstrap Root và DI thuần là ràng buộc; reflection là tùy chọn theo [phần 13](13-reflection-factory.md).
 
 ## Bài toán
 
@@ -10,17 +10,16 @@ Requirement có kinh tế, cây trồng, nhân vật và giao dịch; cần quy�
 
 ## Thiết kế đang đề xuất
 
-Đề xuất giữ 7 assembly: Economy, Farming, Actors, Simulation, UnityAdapters, Presentation, Bootstrap. Đây là phương án để thảo luận, chưa phải số lượng bắt buộc.
+Hiện có 6 assembly gameplay: Economy, Farming, Actors, Simulation, UnityAdapters, Bootstrap. UI/view đang nằm trong UnityAdapters; chỉ tách Presentation asmdef khi có ranh giới độc lập thật sự.
 
 Dependency dự kiến:
 ```text
 Farming → Economy
-Simulation → Economy, Farming, Actors
-UnityAdapters → Simulation, Actors, Farming, Economy
-Presentation → Simulation, Farming, Economy
-Bootstrap → tất cả module trên
+Simulation → Actors, Economy, Farming
+UnityAdapters → Actors, Simulation, Economy, Farming (+ Unity UI/TMP)
+Bootstrap → Economy, Farming, Simulation, UnityAdapters
 ```
-Economy, Farming, Simulation không dùng UnityEngine. Actors chứa cơ chế FSM/stat; state nghiệp vụ ở Simulation. Bootstrap cấp scene dependencies; reflection factory ở composition layer có thể khám phá và tạo class logic theo quy tắc [phần 13](13-reflection-factory.md). Module gameplay không reference factory.
+Economy, Farming, Simulation và Actors không dùng UnityEngine. Actors chứa cơ chế FSM; state nghiệp vụ ở Simulation. `MarketSaleService` ở Simulation vì nó kết hợp batch của Farming với ví của Economy. `PlotConstructionController`, `HarvestMarketCoordinator` và `FarmTickRunner` ở UnityAdapters vì chúng nối scene/MonoBehaviour với service thuần. Bootstrap chỉ tạo graph và quản lý lifecycle. Không có chiều tham chiếu ngược về Bootstrap; [reflection factory](13-reflection-factory.md) chỉ dùng khi có nhu cầu khám phá nhiều implementation theo contract.
 
 ### Ai sở hữu tiền, upgrade và booster?
 

@@ -1,0 +1,7 @@
+{
+  "name": "Farm.Farming",
+  "rootNamespace": "Farm.Farming",
+  "references": ["Farm.Economy"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

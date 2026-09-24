@@ -1,6 +1,6 @@
 {
   "name": "Farm.Bootstrap",
   "rootNamespace": "Farm.Bootstrap",
-  "references": ["Farm.Economy", "Farm.UnityAdapters"],
+  "references": ["Farm.Economy", "Farm.Farming", "Farm.Simulation", "Farm.UnityAdapters"],
   "autoReferenced": false
 }

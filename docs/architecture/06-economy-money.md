@@ -12,7 +12,7 @@ Requirement yêu cầu tính và lưu tiền lớn; ví còn là điểm chung c
 
 - Tiền chỉ có đơn vị nguyên; không có phần lẻ trong `Money`, `Wallet` hoặc dữ liệu lưu.
 - Mỗi lượt thu hoạch tạo một lô hàng với **một `SaleValue`**. Mọi phần trăm lợi nhuận áp dụng lên giá trị lô bằng phép tính chính xác, rồi **làm tròn xuống đúng một lần khi chốt giá lô** tại thời điểm hoàn tất thu hoạch. Với 109 coin và hai hệ số 110/100, kết quả là `floor(109 × 110 × 110 / 10000) = 131` coin.
-- Số quả nhìn thấy chỉ là biểu diễn hình ảnh, không chia `SaleValue` thành giá hoặc giao dịch cho từng quả. Cashout thành công ghi có toàn bộ `SaleValue` một lần.
+- Ba quả Tomato trên cây là ba đơn vị hàng thật của một lượt thu hoạch; hình ảnh trên cây và actor phải phản ánh số lượng đó. Cả ba vẫn thuộc **một lô**: không tách `SaleValue` thành ba giao dịch. Cashout thành công ghi có toàn bộ `SaleValue` một lần.
 
 ## Thiết kế đang đề xuất
 

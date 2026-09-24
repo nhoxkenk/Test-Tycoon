@@ -4,8 +4,7 @@ using UnityEngine;
 
 namespace Farm.UnityAdapters
 {
-    // Scene-level owner of pooled actors and table reservations. Farming and payment
-    // services complete the two requests raised here in later modules.
+    // Scene-level owner of pooled actors and table reservations.
     public sealed class ActorCoordinator : IDisposable
     {
         private readonly WorkerFactory workers;
@@ -69,22 +68,36 @@ namespace Farm.UnityAdapters
         }
 
         public bool CompleteHarvest(int workerId)
+            => CompleteHarvest(workerId, 3);
+
+        public bool CanHarvest(int workerId, int resourceId) =>
+            activeWorkers.TryGetValue(workerId, out var worker) &&
+            worker.ResourceId == resourceId && worker.State == Farm.Simulation.WorkerState.Harvest && !worker.HasCargo;
+
+        public bool CompleteHarvest(int workerId, int quantity)
+            => CompleteHarvest(workerId, quantity, null);
+
+        public bool CompleteHarvest(int workerId, int quantity, Vector3[] fromPositions)
         {
             if (!activeWorkers.TryGetValue(workerId, out var worker) || worker.State != Farm.Simulation.WorkerState.Harvest)
                 return false;
+            worker.ShowCargo(quantity, fromPositions);
             worker.CompleteHarvest();
             TryMatch();
             return true;
         }
 
-        // Call only after the transaction service has committed the sale once.
-        public bool ConfirmSale(int workerId)
+        public bool ConfirmSale(int workerId, int customerId, int quantity)
         {
             if (!activeWorkers.TryGetValue(workerId, out var worker) ||
-                !activeCustomers.TryGetValue(worker.CustomerId, out var customer) ||
+                worker.CustomerId != customerId ||
+                !activeCustomers.TryGetValue(customerId, out var customer) ||
                 worker.State != Farm.Simulation.WorkerState.Cashout || !customer.IsReady)
                 return false;
 
+            var fromPositions = worker.CargoPositions;
+            worker.ShowCargo(0);
+            customer.ShowCargo(quantity, fromPositions);
             worker.ConfirmSale();
             customer.ConfirmPurchase();
             claimedCustomers.Remove(customer.ActorId);

@@ -14,6 +14,7 @@ namespace Farm.UnityAdapters
 
         public ActorCoordinator Coordinator { get; private set; }
         public IWorldQuery WorldQuery { get; private set; }
+        public Transform WorkerOrigin => market != null ? market.WorkerOrigin : null;
         public event Action<int, int> HarvestRequested;
         public event Action<int, int> SaleRequested;
 
@@ -40,9 +41,17 @@ namespace Farm.UnityAdapters
         public bool RegisterResource(int resourceId, Transform workerOrigin, Transform harvestPoint) =>
             Coordinator != null && Coordinator.RegisterResource(resourceId, workerOrigin, harvestPoint);
 
+        public bool RegisterResource(int resourceId, Transform harvestPoint) =>
+            RegisterResource(resourceId, WorkerOrigin, harvestPoint);
+
         public void UnregisterResource(int resourceId) => Coordinator?.UnregisterResource(resourceId);
+        public bool CanHarvest(int workerId, int resourceId) => Coordinator != null && Coordinator.CanHarvest(workerId, resourceId);
         public bool CompleteHarvest(int workerId) => Coordinator != null && Coordinator.CompleteHarvest(workerId);
-        public bool ConfirmSale(int workerId) => Coordinator != null && Coordinator.ConfirmSale(workerId);
+        public bool CompleteHarvest(int workerId, int quantity) => Coordinator != null && Coordinator.CompleteHarvest(workerId, quantity);
+        public bool CompleteHarvest(int workerId, int quantity, Vector3[] fromPositions) =>
+            Coordinator != null && Coordinator.CompleteHarvest(workerId, quantity, fromPositions);
+        public bool ConfirmSale(int workerId, int customerId, int quantity) =>
+            Coordinator != null && Coordinator.ConfirmSale(workerId, customerId, quantity);
         public void SetTargetCustomerCount(int count)
         {
             if (Coordinator != null) Coordinator.TargetCustomerCount = count;
