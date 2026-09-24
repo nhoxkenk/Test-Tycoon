@@ -5,7 +5,8 @@ using Pathfinding;
 
 namespace Farm.Actors
 {
-    [RequireComponent(typeof(AIPath), typeof(Seeker), typeof(Pathfinding.RVO.RVOController))]
+    //[RequireComponent(typeof(AIPath), typeof(Seeker), typeof(Pathfinding.RVO.RVOController))]
+    [RequireComponent(typeof(UnityEngine.AI.NavMeshAgent))]
     public sealed class CustomerActor : MonoBehaviour
     {
         private static readonly int IsMove = Animator.StringToHash("IsMove");

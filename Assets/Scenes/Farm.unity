@@ -118,7 +118,7 @@ NavMeshSettings:
     preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
-  m_NavMeshData: {fileID: 0}
+  m_NavMeshData: {fileID: 23800000, guid: ca6b7dd8d8dfbce419dbf098908b75fa, type: 2}
 --- !u!1 &23633128
 GameObject:
   m_ObjectHideFlags: 0
@@ -353,13 +353,7 @@ MonoBehaviour:
   - {fileID: 255517474}
   - {fileID: 306299300}
   hud: {fileID: 1545816742}
-  upgrades: []
   mainCanvas: {fileID: 0}
-  plotUpgradePrefab: {fileID: 1093446925927276690, guid: 7dc6442f4f2b74ee58012c89cba62b9d, type: 3}
-  upgradeSectionPrefab: {fileID: 1093446925927276690, guid: 25dc167f3331640a8b38f1c030f01b38, type: 3}
-  upgradeItemPrefab: {fileID: 4831415617780161006, guid: 37a1f9ee4140b40c5b9c020a7137b0c1, type: 3}
-  payEffectPrefab: {fileID: 4690974855142316733, guid: 72af2805ca5894e36b7b259694c36e89, type: 3}
-  buildDoneEffectPrefab: {fileID: 4293340820668405538, guid: cd10bc0bf46e44b8692b0ebd17569541, type: 3}
 --- !u!4 &56284375
 Transform:
   m_ObjectHideFlags: 0
@@ -387,78 +381,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a5355c772f9ba540a39f61c98093cc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Farm.Actors::Farm.Actors.ActorSceneInstaller
-  workerPrefab: {fileID: 4429770788481987755, guid: a798966e7b2044a12be9b4ba810e52ad, type: 3}
-  customerPrefab: {fileID: 8460677196407964516, guid: 9e73c309783284fd2bb50baca4fe3da9, type: 3}
   market: {fileID: 249267417}
   actorParent: {fileID: 0}
   initialCustomerCount: 1
---- !u!1 &64761627
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 64761629}
-  - component: {fileID: 64761628}
-  - component: {fileID: 64761630}
-  m_Layer: 0
-  m_Name: RVOSimulator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &64761628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64761627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1764de1de43cc4d19af52679d3eaae06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: AstarPathfindingProject::Pathfinding.RVO.RVOSimulator
-  version: 1
-  desiredSimulationFPS: 20
-  workerThreads: 0
-  doubleBuffering: 0
-  symmetryBreakingBias: 0.1
-  movementPlane: 0
-  drawObstacles: 0
---- !u!4 &64761629
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64761627}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &64761630
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64761627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52e10183f1ec74d27ba5e19d5a2242c0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: AstarPathfindingProject::Pathfinding.RVO.RVONavmesh
-  version: 1
-  uniqueID: 3559303406421685704
-  wallHeight: 5
 --- !u!1 &199809545
 GameObject:
   m_ObjectHideFlags: 0
@@ -995,9 +920,9 @@ RectTransform:
   - {fileID: 485939426}
   m_Father: {fileID: 664604454}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 360, y: -26}
   m_SizeDelta: {x: 200, y: 52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &323240219
@@ -1371,7 +1296,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -26, y: -26}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 470, y: 52}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &664604455
 MonoBehaviour:
@@ -1671,7 +1596,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 8
   m_IsActive: 1
 --- !u!23 &833960299
 MeshRenderer:
@@ -1937,9 +1862,9 @@ RectTransform:
   - {fileID: 23633129}
   m_Father: {fileID: 1581763317}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 98.333336, y: -75}
   m_SizeDelta: {x: 176.66667, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &972111748
@@ -2007,93 +1932,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1049227073
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1049227075}
-  - component: {fileID: 1049227074}
-  m_Layer: 0
-  m_Name: AstarPath
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1049227074
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1049227073}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 78396926cbbfc4ac3b48fc5fc34a87d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: AstarPathfindingProject::AstarPath
-  version: 1
-  data:
-    dataString: UEsDBBQAAAgIAAA4IezHvIg7UgIAAEAFAAALACQAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQF1VNtu2zAM/ZXAz0vhJOuw7W1z0nQDckG9oQ9DHxSLtoXIkqHLcin67yNlJ3aSNQhggzzniIek/BoJZWvInDZzI/hCc4i+DiJ6jz4MuuQj7FmhVSqOcMI8C+5KArGAeWJOaIyPiGZ1Bc6I7JsqJIFjDHolcm2qGS8g0dZZDOdMWsCU0Y7YCkOvg2jfEg7t80jPwRu+ZaAcmPdRw0mAeZVJVtXAqdwOPf7UwieNmkIjLSK+G9+TvpZS2LaQyB3qYDRhtfVoAwFcMDQWShjffcZACaIoXWv7TF/luQUXdCeka9hhKgw2qZGOvuumcxWz26a+v0x6Oux+NA61NbqLm/xwFNK50dXj+eiY/LtSZNsndsiYdb3W9sPTrvpRaNOOyS3bSHguQS313GivOCad8UT1FsbTntTZXlJCtu1wTa2n4Ant69s5jbppvgX7+0SKahMa9bEJpFKHrn8hDhgc0Q+sOGyHbZUwSlX8tvCLFf01ahMPwliHqfZAReVttDcEjWahaeTGu0QbBaavUINi0h3WqOMu5nibe5/1wOjGtKe3udNFuKKEcIeP46vUWu+6cVn46at6rYVyKTCTlT09W+rdAmy58k4KBd1wKLHELiZaqWYB7X9oqTc5y3o0B3vnDUyZY+EuYE24J7xPxY4GhvJS0koGFyT+B13Q/4W6XDI8V4ZwtNQq3KKL5wttQuEFv1z0KL76Da8DUbgJQmHPmVw3TWtHhSvUn4/Cte8K5Ybt5uJYadvZFSrXaWYA1OqSasGgOn4k+IwL9JeCc0KFrSO5t39QSwMEFAAACAgAADgh7EJGoGBSAAAAeAAAAAkAJABtZXRhLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQGrVipLLSrOzM9TslIw0TPSMzTXUVBKL0osyCgGihiCOKWZKSB2tJIBGtBFF1CKBaovqSxI9UvMTYXoCUgsyUjLzEvJzEvXcy/KTHEHGa0UWwsAUEsBAi0AFAAACAgAADgh7Me8iDtSAgAAQAUAAAsAJAAAAAAAAAAAAAAAAAAAAGdyYXBoMC5qc29uCgAgAAAAAAABABgAAIA+1d6xnQEAgD7V3rGdAQCAPtXesZ0BUEsBAi0AFAAACAgAADgh7EJGoGBSAAAAeAAAAAkAJAAAAAAAAAAAAAAAnwIAAG1ldGEuanNvbgoAIAAAAAAAAQAYAACAPtXesZ0BAIA+1d6xnQEAgD7V3rGdAVBLBQYAAAAAAgACALgAAAA8AwAAAAA=
-    upgradeData: 
-    file_cachedStartup: {fileID: 0}
-    data_cachedStartup: 
-    cacheStartup: 0
-  showNavGraphs: 1
-  showUnwalkableNodes: 1
-  debugMode: 0
-  debugFloor: 0
-  debugRoof: 1
-  manualDebugFloorRoof: 0
-  showSearchTree: 0
-  unwalkableNodeDebugSize: 0.3
-  logPathResults: 1
-  maxNearestNodeDistance: 100
-  scanOnStartup: 1
-  fullGetNearestSearch: 0
-  prioritizeGraphs: 0
-  prioritizeGraphsLimit: 1
-  colorSettings:
-    _SolidColor: {r: 0.11764706, g: 0.4, b: 0.7882353, a: 0.9}
-    _UnwalkableNode: {r: 1, g: 0, b: 0, a: 0.5}
-    _BoundsHandles: {r: 0.29, g: 0.454, b: 0.741, a: 0.9}
-    _ConnectionLowLerp: {r: 0, g: 1, b: 0, a: 0.5}
-    _ConnectionHighLerp: {r: 1, g: 0, b: 0, a: 0.5}
-    _MeshEdgeColor: {r: 0, g: 0, b: 0, a: 0.5}
-    _AreaColors:
-    - {r: 0, g: 0, b: 0, a: 0}
-  tagNames: []
-  heuristic: 2
-  heuristicScale: 1
-  threadCount: 1
-  maxFrameTime: 1
-  batchGraphUpdates: 0
-  graphUpdateBatchingInterval: 0.2
-  euclideanEmbedding:
-    mode: 0
-    seed: 0
-    pivotPointRoot: {fileID: 0}
-    spreadOutCount: 1
-  showGraphs: 0
---- !u!4 &1049227075
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1049227073}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1074267623 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4517345505709843071, guid: 22a853b12f2114bc39874a3da3615686, type: 3}
@@ -2293,9 +2131,9 @@ RectTransform:
   - {fileID: 315096244}
   m_Father: {fileID: 664604454}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 110, y: -26}
   m_SizeDelta: {x: 200, y: 52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1271104098
@@ -2825,7 +2663,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 10}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 196.66667, y: 150}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &1581763318
 MonoBehaviour:
@@ -2884,7 +2722,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 8
   m_IsActive: 1
 --- !u!4 &1651393880
 Transform:
@@ -2996,7 +2834,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 8
   m_IsActive: 1
 --- !u!4 &1700224263
 Transform:
@@ -3365,5 +3203,3 @@ SceneRoots:
   - {fileID: 1989185971}
   - {fileID: 1545816746}
   - {fileID: 681702697}
-  - {fileID: 1049227075}
-  - {fileID: 64761629}

@@ -2,6 +2,7 @@ using Farm.Actors;
 using UnityEngine;
 using UnityEngine.Pool;
 using Pathfinding;
+using UnityEngine.AI;
 
 namespace Farm.Actors
 {
@@ -21,8 +22,8 @@ namespace Farm.Actors
         public WorkerActor Spawn(int actorId, int resourceId, WorldPoint origin, WorldPoint harvestPoint)
         {
             var actor = pool.Get();
-            if (actor.Initialize(actorId, resourceId, origin, harvestPoint,
-                    new AstarActorNavigation(actor.GetComponent<AIPath>()))) return actor;
+            var navigation = new NavMeshAgentNavigation(actor.GetComponent<NavMeshAgent>());
+            if (actor.Initialize(actorId, resourceId, origin, harvestPoint,navigation)) return actor;
             pool.Release(actor);
             return null;
         }
