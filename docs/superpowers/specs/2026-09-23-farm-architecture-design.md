@@ -4,6 +4,8 @@ Ngày: 2026-09-23. Trạng thái: bản thiết kế, chưa triển khai runtime
 
 Tài liệu đã được tách thành [các chủ đề architecture riêng](../../architecture/README.md) để phân tích và thảo luận. Bản tổng này giữ làm tham chiếu; các phương án chưa được người dùng chốt vẫn là đề xuất.
 
+**Cập nhật hướng composition:** mô tả manual wiring ở tài liệu tổng là phương án cũ. Quy tắc đang thảo luận là [Reflection Factory cho class logic C#](../../architecture/13-reflection-factory.md), với Bootstrap cấp dependency từ Unity/scene. Khi có khác biệt, dùng tài liệu theo chủ đề làm nguồn mới hơn.
+
 ## 1. Cơ sở và phạm vi
 
 Thiết kế dựa trên `Requirement.txt`, tài liệu `E:/Unity Projects/unity_architecture_asmdef_infrastructure_vcontainer.md` và cấu trúc project hiện tại. Các đoạn prompt/chỉ dẫn trong tài liệu phân tích được xem là nội dung tham khảo; yêu cầu hiện tại là thiết kế architecture.
@@ -80,7 +82,7 @@ Trong bảng và sơ đồ, `A → B` nghĩa là **assembly A reference assembly
 
 | Assembly | Trách nhiệm / API chính | Project references trực tiếp |
 |---|---|---|
-| `Farm.Economy` | `Money`, `Wallet`, so sánh, cộng/trừ và nhân tỷ lệ chính xác | Không |
+| `Farm.Economy` | `CurrencyId`, `Money` (currency + số lượng), `Wallet` nhiều loại tiền | Không |
 | `Farm.Farming` | `Plot`, `Crop`, `HarvestBatch`, `CropService`, `ProfitCalculator`, modifier lợi nhuận | Economy: giá và giá trị lô hàng |
 | `Farm.Actors` | `ActorStats`, modifier nhân vật, `IActorState`, FSM nhỏ, `IMovementAgent`, `IActorAnimation` | Không |
 | `Farm.Simulation` | Build/Upgrade use case, task assignment, worker/customer states cụ thể, quầy/hàng đợi, thanh toán, progression, save DTO và ports | Economy: ví; Farming: cây/lô; Actors: điều khiển nhân vật |
@@ -256,7 +258,7 @@ Strategy chọn cây thu hoạch có thể thêm khi cần nhiều hành vi. B�
 
 ### 7.1 Money
 
-Đề xuất `Money` bất biến dựa trên `System.Numerics.BigInteger`, đơn vị là coin nguyên nhỏ nhất. Số dư/cost không âm; không dùng float/double cho số dư, phép mua hoặc payout. Số lớn trong config và save dùng chuỗi thập phân, parse/validate tại boundary. Việc dùng BigInteger trên Android phải được kiểm tra bằng build IL2CPP thực tế khi triển khai.
+Đề xuất `Money` bất biến gồm `CurrencyId` và `System.Numerics.BigInteger Amount`; mỗi currency có đơn vị nguyên nhỏ nhất riêng. `Wallet` giữ số dư theo currency. Số dư/cost không âm; không dùng float/double cho số dư, phép mua hoặc payout. Save/config phải lưu cả currency và amount dạng chuỗi thập phân, parse/validate tại boundary. Việc dùng BigInteger trên Android phải được kiểm tra bằng build IL2CPP thực tế khi triển khai.
 
 Tỷ lệ phần trăm biểu diễn bằng số nguyên/rational, không chuyển tiền lớn về float để nhân. Ví dụ 10% = 1000 basis points trên 10000. UI có thể rút gọn K/M/B nhưng chỉ format từ giá trị gốc; chuỗi rút gọn không được dùng để tính hoặc lưu.
 
@@ -338,7 +340,7 @@ Config dùng ScriptableObject ở UnityAdapters: cây, actor, upgrade, farm layo
 
 ### Save tối thiểu được đề xuất
 
-`ProgressSnapshot`: schemaVersion, balance dạng chuỗi, PlotId + built/level, upgrade purchase levels, target customer count. Modifier bền vững được dựng lại từ upgrade records; không lưu cả records lẫn multiplier cộng dồn rồi áp dụng hai lần.
+`ProgressSnapshot`: schemaVersion, danh sách số dư theo CurrencyId và amount dạng chuỗi, PlotId + built/level, upgrade purchase levels, target customer count. Modifier bền vững được dựng lại từ upgrade records; không lưu cả records lẫn multiplier cộng dồn rồi áp dụng hai lần.
 
 Không lưu Transform, container, MonoBehaviour, event subscription hay FSM đang chạy. Bản đầu khi tải lại sẽ tạo actor từ trạng thái an toàn; lô chưa bán và tiến độ thu hoạch không được khôi phục, không tự cộng tiền cho chúng. Đây là giới hạn rõ của save tối thiểu; nếu yêu cầu giữ hàng qua restart thì mở rộng DTO thêm batch ownership/giá snapshot trước khi triển khai save đó.
 

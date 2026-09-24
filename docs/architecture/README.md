@@ -2,12 +2,12 @@
 
 Mỗi file tập trung vào một chủ đề để đọc, phân tích và sửa riêng. Đây không phải checklist implementation; chưa tự động chốt các đề xuất trong file.
 
-**Đã chốt:** DI thuần, wire up ở Bootstrap Root; không VContainer. Không sử dụng workflow Superpowers.
+**Đã chốt:** không VContainer; Bootstrap Root cấp đầu vào từ Unity/scene. Reflection factory cho class C# thường đang được đặc tả tại phần 13; các quy tắc lifetime và phạm vi quét còn cần thảo luận. Không sử dụng workflow Superpowers.
 
 | File | Chủ đề |
 |---|---|
 | [01-module-boundaries.md](01-module-boundaries.md) | Ranh giới module và asmdef |
-| [02-bootstrap-di-lifecycle.md](02-bootstrap-di-lifecycle.md) | DI thuần, Bootstrap Root và lifecycle |
+| [02-bootstrap-di-lifecycle.md](02-bootstrap-di-lifecycle.md) | Bootstrap Root và lifecycle |
 | [03-actor-model-factory.md](03-actor-model-factory.md) | Actor model và Factory |
 | [04-actor-state-machines.md](04-actor-state-machines.md) | State Pattern cho nhân viên và khách |
 | [05-navigation-world.md](05-navigation-world.md) | Navigation và world queries |
@@ -18,8 +18,8 @@ Mỗi file tập trung vào một chủ đề để đọc, phân tích và sử
 | [10-upgrades-modifiers.md](10-upgrades-modifiers.md) | Upgrade Strategy và buff nhiều nguồn |
 | [11-presentation-config.md](11-presentation-config.md) | UI, presentation và cấu hình |
 | [12-persistence-validation.md](12-persistence-validation.md) | Save/load, lifecycle mobile và kiểm chứng |
+| [13-reflection-factory.md](13-reflection-factory.md) | Reflection Factory, Activator và ranh giới DI |
 
 Nên bắt đầu từ 01 (module boundaries) và 02 (DI/lifecycle), sau đó chọn từng chủ đề cần bàn. Mỗi file ghi bài toán, phương án đề xuất, trade-off, câu hỏi mở và điều kiện cần giữ.
 
 [Bản thiết kế tổng ban đầu](../superpowers/specs/2026-09-23-farm-architecture-design.md) giữ làm tài liệu tham chiếu. Các đề xuất trong bản đó chưa được xem là đã chốt chỉ vì đã viết ra. Khi thảo luận, cập nhật file chủ đề trước; không phải gom lại toàn bộ tài liệu để sửa một quyết định.
-

@@ -1,0 +1,6 @@
+{
+  "name": "Farm.Bootstrap",
+  "rootNamespace": "Farm.Bootstrap",
+  "references": ["Farm.Economy", "Farm.UnityAdapters"],
+  "autoReferenced": false
+}

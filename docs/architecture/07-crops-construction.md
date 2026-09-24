@@ -15,7 +15,7 @@ Click hộp → Build → cây xuất hiện; cây có level và profit. Cần t
 ```text
 Box → Building → Ready → Reserved/Harvesting → Cooldown → Ready
 ```
-Dùng enum và transition methods trước. Cây chưa cần một class cho mỗi state.
+Dùng enum và transition methods trước. Cây chưa cần một class cho mỗi state. Theo chuỗi ảnh tham chiếu, màn chơi bắt đầu với các ô resource còn đóng nhưng khách đã đứng chờ tại bàn. Tương tác mở khóa và timer xây dựng dẫn tới cây xuất hiện, ví dụ cây cà chua trong ảnh; **khi resource đã thành cây có thể thu hoạch và còn chỗ làm**, hệ thống mới đăng ký/spawn nhân viên cho resource đó. Popup mở khóa hoặc timer đang chạy không tự tạo nhân viên. Một ô vẫn đóng không có nhân viên thu hoạch.
 
 ## Phương án và trade-off
 
@@ -35,4 +35,3 @@ Build lặp không trừ tiền hai lần. Animation kết thúc không tự t�
 ## Liên quan
 
 Xem [chủ đề liên quan](08-worker-harvest-logistics.md). Đổi contract liên quan cần cập nhật cả hai tài liệu; số thứ tự là thứ tự đọc, không phải lệnh triển khai.
-

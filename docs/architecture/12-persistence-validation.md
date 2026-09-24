@@ -10,7 +10,7 @@ Requirement nói lưu trữ tiền lớn; phạm vi lưu cả tiến trình và 
 
 ## Thiết kế đang đề xuất
 
-Đề xuất ProgressSnapshot chứa schemaVersion, balance chuỗi, PlotId/built/level, purchase records và target population. IProgressStore thuộc Simulation, JSON adapter thuộc UnityAdapters. Load trước spawn/tick, tái dựng buff từ records một lần.
+Đề xuất ProgressSnapshot chứa schemaVersion, danh sách số dư `(CurrencyId, amount dạng chuỗi)`, PlotId/built/level, purchase records và target population. CurrencyId lưu bằng tên/ID ổn định, không phụ thuộc thứ tự của enum. IProgressStore thuộc Simulation, JSON adapter thuộc UnityAdapters. Load trước spawn/tick, tái dựng buff từ records một lần.
 
 Save tối thiểu trước đây đề xuất reset actor/FSM và bỏ lô chưa bán khi load. Đây là lựa chọn đang thảo luận, không phải requirement đã xác nhận. Nếu cần giữ hàng, lưu BatchId, owner và SaleValue cùng snapshot.
 
@@ -32,4 +32,3 @@ Không apply buff/+2 khách lần hai khi load. File hỏng/schema khác không 
 ## Liên quan
 
 Xem [chủ đề liên quan](02-bootstrap-di-lifecycle.md). Đổi contract liên quan cần cập nhật cả hai tài liệu; số thứ tự là thứ tự đọc, không phải lệnh triển khai.
-

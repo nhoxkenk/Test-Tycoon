@@ -10,7 +10,11 @@ Requirement có nâng level cây, buff một cây, buff tất cả cây và thê
 
 ## Thiết kế đang đề xuất
 
-ProgressionService sở hữu purchase validation/records. Ba effect strategy: SingleCropProfitEffect, AllCropsProfitEffect, CustomerCapacityEffect. Bootstrap chọn effect tường minh theo EffectKind.
+ProgressionService sở hữu purchase validation/records. Ba effect strategy: SingleCropProfitEffect, AllCropsProfitEffect, CustomerCapacityEffect. Reflection factory ở composition layer khám phá handler theo EffectKind và kiểm tra key trùng/thiếu lúc startup; xem [phần 13](13-reflection-factory.md).
+
+Upgrade/booster không nằm trong Economy. `UpgradeDefinition` có cost là `Money(currency, amount)`; ProgressionService sở hữu điều kiện mua và record nâng cấp, rồi dùng Wallet để trả tiền. Economy không phụ thuộc Progression. Booster có thời hạn được quản lý ở `Simulation/Boosters`; Farming hoặc Actors chỉ nhận/gỡ modifier theo `SourceId`, không biết người chơi đã mua hay kích hoạt booster thế nào.
+
+Thêm một upgrade **dùng effect có sẵn** chỉ thêm config. Thêm effect mới thì thêm handler có contract/metadata hợp lệ để factory quét; Bootstrap chỉ đổi nếu effect cần dependency mới từ scene hoặc cần chọn giữa nhiều implementation. Không cần một class riêng cho từng item nâng cấp.
 
 Modifier key gồm SourceId/TargetId/StatId. Cùng key cập nhật, khác nguồn kết hợp theo công thức đề xuất:
 ```text
@@ -36,4 +40,3 @@ Global buff áp dụng cả cây xây sau. Remove source không làm mất ngu�
 ## Liên quan
 
 Xem [chủ đề liên quan](06-economy-money.md). Đổi contract liên quan cần cập nhật cả hai tài liệu; số thứ tự là thứ tự đọc, không phải lệnh triển khai.
-
