@@ -20,7 +20,7 @@ Modifier key gồm SourceId/TargetId/StatId. Cùng key cập nhật, khác ngu�
 ```text
 (base + Σflat) × (1 + Σpercent) × Πmultiplier
 ```
-Actors giữ stat modifiers cho tốc độ/capacity; Farming giữ profit modifiers với số học chính xác.
+Actors giữ stat modifiers cho tốc độ/capacity; Farming giữ profit modifiers với số học chính xác. Các hệ số tác động đến giá trị lô được kết hợp trước, rồi làm tròn xuống đúng một lần khi chốt `SaleValue` lúc thu hoạch.
 
 ## Phương án và trade-off
 

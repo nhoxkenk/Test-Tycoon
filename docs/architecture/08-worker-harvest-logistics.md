@@ -10,7 +10,7 @@ Giá bán phải tính tại thời điểm thu hoạch. Đây là boundary quan
 
 ## Thiết kế đang đề xuất
 
-Khi resource đã mở/xây xong thành cây có thể thu hoạch và có chỗ làm, hệ thống đăng ký một nhân viên vào resource/slot trước khi spawn/assign. Trước thời điểm đó, khách có thể đã chờ ở bàn nhưng không có worker gắn với ô resource còn đóng. Resource không còn chỗ làm thì nhân viên dư được trả pool. Worker giữ assignment qua nhiều lượt nếu resource còn hợp lệ. Sau khi tới đích và timer hoàn tất, CropService tạo HarvestBatch bất biến: BatchId, PlotId, quantity, SaleValue.
+Khi resource đã mở/xây xong thành cây có thể thu hoạch và có chỗ làm, hệ thống đăng ký một nhân viên vào resource/slot trước khi spawn/assign. Trước thời điểm đó, khách có thể đã chờ ở bàn nhưng không có worker gắn với ô resource còn đóng. Resource không còn chỗ làm thì nhân viên dư được trả pool. Worker giữ assignment qua nhiều lượt nếu resource còn hợp lệ. Sau khi tới đích và timer hoàn tất, CropService tạo `HarvestBatch` bất biến: `BatchId`, `PlotId`, `SaleValue`. `SaleValue` là giá trị **cả lô**, đã áp dụng các modifier và làm tròn xuống một lần tại thời điểm chốt thu hoạch. Số quả hiển thị có thể là dữ liệu visual riêng; nó không chia lô thành các khoản tiền theo từng quả.
 
 ```text
 Register resource/slot → Move → Harvest complete → Snapshot batch
@@ -18,7 +18,7 @@ Register resource/slot → Move → Harvest complete → Snapshot batch
 → Move tới điểm đứng đối diện khách → Cashout/Sale tại điểm đó
 → Return to origin → lặp lại nếu resource còn hợp lệ
 ```
-Giá chốt khi hoàn tất harvest là đề xuất cách hiểu requirement. Reservation chỗ làm gắn với worker cho tới khi resource đóng hoặc worker bị thu hồi; reservation cho **một lần harvest** được release/cập nhật cooldown sau harvest. Worker/session sở hữu cargo cho tới sale; không thu hoạch lô thứ hai khi còn giữ lô thứ nhất.
+Giá chốt khi hoàn tất harvest đã được thống nhất. Reservation chỗ làm gắn với worker cho tới khi resource đóng hoặc worker bị thu hồi; reservation cho **một lần harvest** được release/cập nhật cooldown sau harvest. Worker/session sở hữu cargo cho tới sale; không thu hoạch lô thứ hai khi còn giữ lô thứ nhất.
 
 ## Phương án và trade-off
 
@@ -27,8 +27,7 @@ Worker tự chọn job đơn giản khi ít nhân viên; dispatcher tập trung 
 ## Điểm cần thảo luận
 
 - Chọn việc theo cây gần nhất hay ưu tiên lợi nhuận/thời gian?
-- Giá chốt khi bắt đầu hay hoàn tất động tác harvest?
-- Capacity là số quả, số lô hay trọng lượng?
+- Capacity của worker, nếu cần cho gameplay sau này, đo bằng số lô hay trọng lượng? Số quả hiển thị không quyết định số tiền cashout.
 - Nếu resource đóng khi worker đang giữ cargo, worker hoàn tất giao dịch rồi trả pool hay chuyển cargo sang owner khác?
 
 ## Điều kiện cần giữ

@@ -12,16 +12,15 @@ Ban đầu có một khách; khách chờ tại quầy, nhận hàng rồi trả
 
 MarketService sở hữu table slot reservation và ghép khách với hàng. `targetCustomerCount` ban đầu là 1, upgrade có thể tăng; PopulationController dùng CustomerFactory để bù số thiếu **chỉ khi** `activeCustomerCount < targetCustomerCount` và còn table slot trống. Khách đầu tiên được spawn để đứng chờ tại bàn ngay từ đầu màn chơi, trước khi bất kỳ resource nào được mở. Slot được reserve và gắn với khách trước spawn, nên khách vừa xuất hiện đã có vị trí mua hàng cụ thể; không để ProgressionService gọi factory trực tiếp.
 
-Nhân viên sau harvest giữ hàng và Idle cho tới khi khách **đã tới table slot được giữ cho mình**. Khách đang di chuyển chưa được ghép để kéo nhân viên ra quầy. Khi cả nhân viên có hàng và khách đang đứng chờ, MarketService ghép một worker/batch với một customer/slot; nhân viên mới đi tới `WorkerCashoutPoint` đứng đối diện khách. Khi nhân viên đến nơi và khách vẫn ở slot, MarketService validate batch ownership, cặp ghép và vị trí; consume batch + đánh dấu khách đã mua + credit ví trong một đoạn đồng bộ, rồi phát notification. Khách sau mua đi tới checkout/disappear point và trở về pool. Sale commit tại thời điểm nhân viên đến đúng vị trí đối diện khách và giao dịch thành công; checkout là điểm rời đi, không cộng tiền lần hai.
+Nhân viên sau harvest giữ hàng và Idle cho tới khi khách **đã tới table slot được giữ cho mình**. Khách đang di chuyển chưa được ghép để kéo nhân viên ra quầy. Khi cả nhân viên có hàng và khách đang đứng chờ, MarketService ghép một worker/batch với một customer/slot; nhân viên mới đi tới `WorkerCashoutPoint` đứng đối diện khách. Khi nhân viên đến nơi và khách vẫn ở slot, MarketService validate batch ownership, cặp ghép và vị trí; consume batch + đánh dấu khách đã mua + credit ví **một lần bằng toàn bộ `SaleValue` đã chốt của lô** trong một đoạn đồng bộ, rồi phát notification. Số quả xuất hiện trên màn hình chỉ phục vụ visual, không tạo các giao dịch con. Khách sau mua đi tới checkout/disappear point và trở về pool. Sale commit tại thời điểm nhân viên đến đúng vị trí đối diện khách và giao dịch thành công; checkout là điểm rời đi, không cộng tiền lần hai.
 
 ## Phương án và trade-off
 
-FIFO dễ hiểu và công bằng; ghép theo loại hàng chỉ cần nếu khách có yêu cầu loại quả. Bán cả lô đơn giản; bán từng phần cần remaining quantity/value và quy tắc rounding khác. Tránh quyết định chi tiết này chỉ từ suy đoán.
+FIFO dễ hiểu và công bằng; ghép theo loại hàng chỉ cần nếu khách có yêu cầu loại quả. Một khách mua trọn một lô và trả một khoản tiền; số quả visual không làm phát sinh bán từng phần.
 
 ## Điểm cần thảo luận
 
 - +2 khách nghĩa là tăng `targetCustomerCount` lâu dài; đã ghi theo flow người dùng. Cần đối chiếu APK nếu hành vi demo khác.
-- Một khách mua cả lô hay số lượng cố định?
 - Table có bao nhiêu slot và slot được release khi khách rời bàn hay khi tới checkout? Đề xuất: release khi rời bàn; active count giảm khi về pool.
 - Khách có patience/timeout không?
 
