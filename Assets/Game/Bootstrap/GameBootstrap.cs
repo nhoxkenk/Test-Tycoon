@@ -13,10 +13,7 @@ namespace Farm.Bootstrap
     public sealed class GameBootstrap : MonoBehaviour
     {
         [SerializeField] private string initialBalance = "100000";
-        [SerializeField] private ActorSceneInstaller actors;
-        [SerializeField] private PlotSlotView[] plots;
-        [SerializeField] private WalletHudView hud;
-        [SerializeField] private Canvas mainCanvas;
+        [SerializeField] private FarmSceneBindings scene;
 
         private PlotConstructionController plotController;
         private HarvestMarketCoordinator tradeCoordinator;
@@ -44,34 +41,27 @@ namespace Farm.Bootstrap
 
         private void Compose()
         {
-            if (actors == null) actors = FindObjectOfType<ActorSceneInstaller>();
-            if (plots == null || plots.Length == 0) plots = FindObjectsOfType<PlotSlotView>();
-            if (hud == null) hud = FindObjectOfType<WalletHudView>();
-            if (mainCanvas == null)
-                foreach (var canvas in FindObjectsOfType<Canvas>())
-                    if (canvas.renderMode == RenderMode.ScreenSpaceOverlay) { mainCanvas = canvas; break; }
+            // 1. Validate scene bindings
+            if (scene == null)
+                throw new InvalidOperationException("Farm scene bindings are not assigned.");
+            if (!scene.Validate(out var bindingError))
+                throw new InvalidOperationException("Farm scene bindings are invalid: " + bindingError);
             if (!Money.TryParse(CurrencyId.Coin, initialBalance, out var initialCoin))
                 throw new InvalidOperationException("Initial balance must be a non-negative integer.");
-            var gameCamera = Camera.main;
-            if (plots == null || plots.Length == 0 || actors == null || gameCamera == null ||
-                mainCanvas == null || !actors.HasValidMarket)
-                throw new InvalidOperationException("Farm scene references are missing.");
 
-            var plotUpgradePrefab = LoadPrefab("Farm/UI/ConstructionUpgradeView");
-            var upgradeSectionPrefab = LoadPrefab("Farm/UI/UpgradeView");
-            var upgradeItemPrefab = LoadPrefab("Farm/UI/UpgradeItemView");
-            var payEffectPrefab = LoadPrefab("Farm/Effects/EffPay");
-            var buildDoneEffectPrefab = LoadPrefab("Farm/Effects/EffBuildDone");
-            var workerPrefab = LoadActor<WorkerActor>("Farm/Actors/Delivery");
-            var customerPrefab = LoadActor<CustomerActor>("Farm/Actors/Customer");
-            UpgradeMenuView.ValidatePrefabs(mainCanvas, upgradeSectionPrefab, upgradeItemPrefab);
-            ConstructionUpgradeView.ValidatePrefab(plotUpgradePrefab);
+            // 2. Load assets based on navigation strategy
+            var backendId = scene.Actors.NavigationStrategy != null ? scene.Actors.NavigationStrategy.BackendId : "NavMesh";
+            var assets = FarmAssets.Load(backendId);
 
-            var buildDefinitions = new List<PlotDefinition>(plots.Length);
-            var harvestDefinitions = new List<HarvestDefinition>(plots.Length);
+            // 3. Validate prefabs
+            ConstructionUpgradeView.ValidatePrefab(assets.ConstructionUpgradePrefab);
+
+            // 4. Build definitions from plot config
+            var buildDefinitions = new List<PlotDefinition>(scene.Plots.Length);
+            var harvestDefinitions = new List<HarvestDefinition>(scene.Plots.Length);
             var levelCosts = new Dictionary<int, Money[]>();
             var plotBuildTimes = new Dictionary<int, float>();
-            foreach (var plot in plots)
+            foreach (var plot in scene.Plots)
             {
                 if (plot == null || plot.Resource == null || plotBuildTimes.ContainsKey(plot.PlotId) ||
                     plot.GetComponent<PlotUiView>() == null ||
@@ -96,28 +86,16 @@ namespace Farm.Bootstrap
                 levelCosts.Add(plot.PlotId, costs);
             }
 
-            var configuredUpgrades = Resources.LoadAll<UpgradeConfig>("Upgrades");
-            if (configuredUpgrades.Length != 7)
-                throw new InvalidOperationException("Resources/Upgrades must contain exactly seven upgrade configs; found " + configuredUpgrades.Length + ".");
-            Array.Sort(configuredUpgrades, (left, right) => UpgradeOrder(left).CompareTo(UpgradeOrder(right)));
-            var upgradeDefinitions = new List<UpgradeDefinition>();
-            var upgradeIds = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var config in configuredUpgrades)
-            {
-                if (config == null || string.IsNullOrWhiteSpace(config.Id) || UpgradeOrder(config) == int.MaxValue ||
-                    !Money.TryParse(CurrencyId.Coin, config.CoinCost, out var upgradeCost))
-                    throw new InvalidOperationException("Resources/Upgrades has a missing, unknown, or invalid upgrade config: " + (config != null ? config.Id : "null") + ".");
-                if (!upgradeIds.Add(config.Id))
-                    throw new InvalidOperationException("Resources/Upgrades has duplicate upgrade ID: " + config.Id + ".");
-                var kind = config.UpgradeEffect == UpgradeConfig.Effect.AddCustomers ? UpgradeKind.CustomerCount :
-                    config.UpgradeEffect == UpgradeConfig.Effect.DoubleAllPlots ? UpgradeKind.AllPlotsIncome : UpgradeKind.PlotIncome;
-                upgradeDefinitions.Add(new UpgradeDefinition(config.Id, kind, config.Amount, config.PlotId, upgradeCost));
-            }
+            // 5. Upgrade definitions
+            var upgradeDefinitions = BuildUpgradeDefinitions(assets.UpgradeConfigs);
 
+            // 6. Load and validate save
             progressStore = new JsonProgressStore();
             var hasLoadedProgress = progressStore.TryLoad(out loadedSnapshot, out var loadError);
             persistenceCanSave = string.IsNullOrEmpty(loadError);
             if (!persistenceCanSave) Debug.LogError("Farm progress was not loaded: " + loadError + " Saving is disabled to preserve the file.", this);
+
+            // 7. Create services + restore progression
             var walletBalances = new[] { initialCoin };
             if (hasLoadedProgress)
             {
@@ -138,43 +116,64 @@ namespace Farm.Bootstrap
                     throw new InvalidOperationException("Validated plot progress could not be restored.");
             }
             var market = new MarketSaleService(harvest, (IWalletTransactions)wallet);
-            if (hud != null) hud.Bind(wallet);
+            if (scene.Hud != null) scene.Hud.Bind(wallet);
 
-            plotController = new PlotConstructionController(plots, construction, wallet, gameCamera);
+            // 8. Prepare navigation + create coordinator (no spawn yet)
+            plotController = new PlotConstructionController(scene.Plots, construction, wallet, scene.GameCamera);
             plotController.Initialize();
             progression = new ProgressionService((IWalletTransactions)wallet, construction, harvest, levelCosts,
-                upgradeDefinitions, actors.SetTargetCustomerCount, actors.InitialCustomerCount);
+                upgradeDefinitions, scene.Actors.SetTargetCustomerCount, scene.Actors.InitialCustomerCount);
             if (loadedSnapshot != null && !progression.RestorePurchasedUpgradeIds(loadedSnapshot.purchasedUpgradeIds))
                 throw new InvalidOperationException("Validated upgrade records could not be restored.");
-            if (!actors.Initialize(workerPrefab, customerPrefab, progression.CustomerTargetCount))
+
+            // 9. Initialize actors (validates + prepares navigation, then spawns)
+            if (!scene.Actors.Initialize(assets.WorkerPrefab, assets.CustomerPrefab, progression.CustomerTargetCount))
                 throw new InvalidOperationException("Actor scene could not be initialized.");
-            plotController.BindProgression(progression, mainCanvas, plotUpgradePrefab);
+
+            // 10. Bind controllers/UI/events
+            var upgradePrefab = assets.ConstructionUpgradePrefab.GetComponent<ConstructionUpgradeView>();
+            plotController.BindProgression(progression, upgradePrefab);
             upgradeMenu = gameObject.AddComponent<UpgradeMenuView>();
-            upgradeMenu.Initialize(mainCanvas, upgradeSectionPrefab, upgradeItemPrefab, configuredUpgrades, progression, wallet);
-            tradeCoordinator = new HarvestMarketCoordinator(plotController, actors, harvest, market, plots);
+            upgradeMenu.Initialize(scene.MainCanvas, scene.UpgradeNavButton, assets.UpgradeSectionPrefab, assets.UpgradeItemPrefab,
+                assets.UpgradeConfigs, progression, wallet);
+            tradeCoordinator = new HarvestMarketCoordinator(plotController, scene.Actors, harvest, market, scene.Plots);
             feedback = gameObject.AddComponent<ProgressFeedbackView>();
-            feedback.Initialize(construction, market, actors, plots, payEffectPrefab, buildDoneEffectPrefab);
+            feedback.Initialize(construction, market, scene.Actors, scene.Plots, assets.PayEffectPrefab, assets.BuildDoneEffectPrefab);
             plotController.RestorePresentation();
 
+            // 11. Persistence
             persistence = gameObject.AddComponent<ProgressPersistenceController>();
             persistence.Initialize(progressStore, wallet, construction, harvest, progression, persistenceCanSave);
 
             runner = GetComponent<FarmTickRunner>();
             if (runner == null) runner = gameObject.AddComponent<FarmTickRunner>();
             runner.Initialize(construction, harvest, plotController);
+
+            // 12. Cheat: reset button (bottom-left corner)
+            var cheat = gameObject.AddComponent<CheatResetView>();
+            cheat.Initialize(scene.MainCanvas, persistence.StopSaving);
+        }
+
+        private static List<UpgradeDefinition> BuildUpgradeDefinitions(UpgradeConfig[] configs)
+        {
+            Array.Sort(configs, (left, right) => UpgradeOrder(left).CompareTo(UpgradeOrder(right)));
+            var definitions = new List<UpgradeDefinition>();
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var config in configs)
+            {
+                if (config == null || string.IsNullOrWhiteSpace(config.Id) || UpgradeOrder(config) == int.MaxValue ||
+                    !Money.TryParse(CurrencyId.Coin, config.CoinCost, out var upgradeCost))
+                    throw new InvalidOperationException("Resources/Upgrades has a missing, unknown, or invalid upgrade config: " + (config != null ? config.Id : "null") + ".");
+                if (!ids.Add(config.Id))
+                    throw new InvalidOperationException("Resources/Upgrades has duplicate upgrade ID: " + config.Id + ".");
+                var kind = config.UpgradeEffect == UpgradeConfig.Effect.AddCustomers ? UpgradeKind.CustomerCount :
+                    config.UpgradeEffect == UpgradeConfig.Effect.DoubleAllPlots ? UpgradeKind.AllPlotsIncome : UpgradeKind.PlotIncome;
+                definitions.Add(new UpgradeDefinition(config.Id, kind, config.Amount, config.PlotId, upgradeCost));
+            }
+            return definitions;
         }
 
         private void OnDestroy() => TearDown();
-
-        private static GameObject LoadPrefab(string key) =>
-            Resources.Load<GameObject>(key) ?? throw new InvalidOperationException("Missing Resources prefab: " + key + ".");
-
-        private static T LoadActor<T>(string key) where T : Component
-        {
-            var actor = LoadPrefab(key).GetComponent<T>();
-            if (actor == null) throw new InvalidOperationException("Resources prefab " + key + " is missing " + typeof(T).Name + ".");
-            return actor;
-        }
 
         private static int UpgradeOrder(UpgradeConfig config)
         {
@@ -200,8 +199,8 @@ namespace Farm.Bootstrap
             tradeCoordinator?.Dispose();
             if (upgradeMenu != null) Destroy(upgradeMenu);
             plotController?.Dispose();
-            if (actors != null) actors.Dispose();
-            if (hud != null) hud.Unbind();
+            if (scene != null && scene.Actors != null) scene.Actors.Dispose();
+            if (scene != null && scene.Hud != null) scene.Hud.Unbind();
             tradeCoordinator = null;
             plotController = null;
             progression = null;

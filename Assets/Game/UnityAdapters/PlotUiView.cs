@@ -17,7 +17,8 @@ namespace Farm.UnityAdapters
         private InformationView information;
         private ResourceConfig resource;
         private Transform worldUiRoot;
-        private PlotUpgradeView upgradeView;
+        private PlotUpgradeView upgradePresenter;
+        private ConstructionUpgradeView upgradeViewInstance;
         private ProgressionService boundProgression;
         private int boundPlotId;
 
@@ -55,19 +56,17 @@ namespace Farm.UnityAdapters
         }
 
         public void BindProgression(int plotId, ProgressionService progression, IWalletReader wallet,
-            Canvas mainCanvas, GameObject upgradePrefab)
+            ConstructionUpgradeView upgradePrefab)
         {
             boundProgression = progression;
             boundPlotId = plotId;
             progression.Changed += RefreshEstimatedSale;
-            if (upgradeView == null)
+            if (upgradePresenter == null && upgradePrefab != null)
             {
-                var host = new GameObject("Plot Upgrade UI", typeof(RectTransform));
-                host.transform.SetParent(worldUiRoot, false);
-                upgradeView = host.AddComponent<PlotUpgradeView>();
-                if (mainCanvas == null || upgradePrefab == null) return;
-                upgradeView.Initialize(mainCanvas, upgradePrefab, plotId, resource, progression, wallet);
-                upgradeView.Show(false);
+                upgradeViewInstance = Instantiate(upgradePrefab, worldUiRoot);
+                upgradeViewInstance.transform.localPosition = Vector3.zero;
+                upgradeViewInstance.transform.localScale = Vector3.one;
+                upgradePresenter = new PlotUpgradeView(upgradeViewInstance, plotId, resource.Icon, progression, wallet);
             }
             RefreshEstimatedSale();
         }
@@ -82,10 +81,13 @@ namespace Farm.UnityAdapters
         {
             if (boundProgression != null) boundProgression.Changed -= RefreshEstimatedSale;
             boundProgression = null;
-            if (upgradeView == null) return;
-            upgradeView.gameObject.SetActive(false);
-            Destroy(upgradeView.gameObject);
-            upgradeView = null;
+            upgradePresenter?.Dispose();
+            upgradePresenter = null;
+            if (upgradeViewInstance != null)
+            {
+                Destroy(upgradeViewInstance.gameObject);
+                upgradeViewInstance = null;
+            }
         }
 
         public void ShowUnlock(bool affordable)
@@ -109,9 +111,16 @@ namespace Farm.UnityAdapters
             information.gameObject.SetActive(true);
         }
 
-        public void ShowUpgrade() => upgradeView?.Show(true);
+        public void ShowUpgrade() => upgradePresenter?.Show();
+        public void CloseUpgrade() => upgradePresenter?.Close();
 
         public void HideUnlock() => unlock.gameObject.SetActive(false);
+
+        public void HideInteractiveUi()
+        {
+            HideUnlock();
+            CloseUpgrade();
+        }
 
         private void OnDestroy() => UnbindProgression();
     }

@@ -1,8 +1,6 @@
 using Farm.Actors;
 using UnityEngine;
 using UnityEngine.Pool;
-using Pathfinding;
-using UnityEngine.AI;
 
 namespace Farm.Actors
 {
@@ -10,20 +8,22 @@ namespace Farm.Actors
     {
         private readonly WorkerActor prefab;
         private readonly Transform parent;
+        private readonly ActorNavigationStrategy strategy;
         private readonly ObjectPool<WorkerActor> pool;
 
-        public WorkerFactory(WorkerActor prefab, Transform parent)
+        public WorkerFactory(WorkerActor prefab, Transform parent, ActorNavigationStrategy strategy)
         {
             this.prefab = prefab;
             this.parent = parent;
+            this.strategy = strategy;
             pool = new ObjectPool<WorkerActor>(Create, OnGet, OnRelease, OnDestroy, true, 2, 32);
         }
 
         public WorkerActor Spawn(int actorId, int resourceId, WorldPoint origin, WorldPoint harvestPoint)
         {
             var actor = pool.Get();
-            var navigation = new NavMeshAgentNavigation(actor.GetComponent<NavMeshAgent>());
-            if (actor.Initialize(actorId, resourceId, origin, harvestPoint,navigation)) return actor;
+            var navigation = strategy.CreateNavigation(actor);
+            if (actor.Initialize(actorId, resourceId, origin, harvestPoint, navigation)) return actor;
             pool.Release(actor);
             return null;
         }

@@ -1,48 +1,49 @@
+using System;
 using Farm.Economy;
 using Farm.Simulation;
 using UnityEngine;
 
 namespace Farm.UnityAdapters
 {
-    public sealed class PlotUpgradeView : MonoBehaviour
+    // Presenter for per-plot upgrade popup. Plain C# with Dispose.
+    public sealed class PlotUpgradeView : IDisposable
     {
-        private ProgressionService progression;
-        private IWalletReader boundWallet;
-        private int plotId;
-        private ConstructionUpgradeView view;
-        private GameObject viewObject;
+        private readonly ConstructionUpgradeView view;
+        private readonly ProgressionService progression;
+        private readonly IWalletReader wallet;
+        private readonly int plotId;
+        private bool disposed;
 
-        public void Initialize(Canvas canvas, GameObject prefab, int id, ResourceConfig resource,
-            ProgressionService service, IWalletReader wallet)
+        public PlotUpgradeView(ConstructionUpgradeView view, int plotId, Sprite icon,
+            ProgressionService progression, IWalletReader wallet)
         {
-            plotId = id;
-            progression = service;
-            boundWallet = wallet;
-            viewObject = Instantiate(prefab.gameObject, canvas.transform);
-            viewObject.name = "Plot Upgrade " + id;
-            var blocker = viewObject.GetComponent<UnityEngine.UI.Image>();
-            if (blocker == null) blocker = viewObject.AddComponent<UnityEngine.UI.Image>();
-            blocker.color = new Color(0, 0, 0, 0);
-            blocker.raycastTarget = true;
-            view = viewObject.GetComponent<ConstructionUpgradeView>();
-            if (view == null) view = viewObject.AddComponent<ConstructionUpgradeView>();
-            var canvasComponent = viewObject.GetComponent<Canvas>();
-            if (canvasComponent != null) canvasComponent.sortingOrder = 50;
-            view.BindPlot(resource.Icon, () => progression.GetLevel(plotId),
-                () => progression.GetNextLevelCost(plotId).ToString(),
-                () => progression.CanUpgradePlot(plotId), OnBuy, Close);
+            this.view = view ?? throw new ArgumentNullException(nameof(view));
+            this.plotId = plotId;
+            this.progression = progression ?? throw new ArgumentNullException(nameof(progression));
+            this.wallet = wallet ?? throw new ArgumentNullException(nameof(wallet));
+            view.SetIcon(icon);
+            view.BuyClicked += OnBuy;
+            view.CloseClicked += OnClose;
             progression.Changed += Refresh;
             wallet.BalanceChanged += OnBalanceChanged;
-            viewObject.SetActive(false);
+            view.gameObject.SetActive(false);
             Refresh();
         }
 
-        public void Show(bool visible)
+        public bool IsVisible => view != null && view.gameObject.activeSelf;
+
+        public void Show()
         {
-            if (visible)
-                foreach (var other in FindObjectsOfType<PlotUpgradeView>())
-                    if (other != this) other.Close();
-            if (viewObject != null) viewObject.SetActive(visible);
+            if (view != null)
+            {
+                view.gameObject.SetActive(true);
+                Refresh();
+            }
+        }
+
+        public void Close()
+        {
+            if (view != null) view.gameObject.SetActive(false);
         }
 
         private void OnBuy()
@@ -51,16 +52,30 @@ namespace Farm.UnityAdapters
             Refresh();
         }
 
-        private void Refresh() => view?.Refresh();
-        private void OnBalanceChanged(Money _) => Refresh();
-        private void Close() { if (viewObject != null) viewObject.SetActive(false); }
-
-        private void OnDestroy()
+        private void Refresh()
         {
+            if (view == null || progression == null) return;
+            var level = progression.GetLevel(plotId);
+            var cost = progression.GetNextLevelCost(plotId).ToString();
+            var cashout = progression.GetCurrentBatchValue(plotId).ToString();
+            var canBuy = progression.CanUpgradePlot(plotId);
+            view.Render(level, cost, cashout, canBuy);
+        }
+
+        private void OnBalanceChanged(Money _) => Refresh();
+        private void OnClose() => Close();
+
+        public void Dispose()
+        {
+            if (disposed) return;
+            disposed = true;
+            if (view != null)
+            {
+                view.BuyClicked -= OnBuy;
+                view.CloseClicked -= OnClose;
+            }
             if (progression != null) progression.Changed -= Refresh;
-            if (boundWallet != null) boundWallet.BalanceChanged -= OnBalanceChanged;
-            boundWallet = null;
-            if (viewObject != null) Destroy(viewObject);
+            if (wallet != null) wallet.BalanceChanged -= OnBalanceChanged;
         }
     }
 }

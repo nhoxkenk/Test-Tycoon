@@ -7,60 +7,57 @@ namespace Farm.UnityAdapters
 {
     public sealed class ConstructionUpgradeView : MonoBehaviour
     {
-        private TMP_Text levelText;
-        private TMP_Text costText;
-        private Slider slider;
-        private Button upgradeButton;
-        private Func<int> level;
-        private Func<string> cost;
-        private Func<bool> canBuy;
+        [SerializeField] private Image iconImage;
+        [SerializeField] private TMP_Text levelText;
+        [SerializeField] private TMP_Text costText;
+        [SerializeField] private TMP_Text buttonCostText;
+        [SerializeField] private Slider slider;
+        [SerializeField] private Button upgradeButton;
+        [SerializeField] private Button closeButton;
 
-        public void BindPlot(Sprite icon, Func<int> getLevel, Func<string> getCost, Func<bool> affordable,
-            Action buy, Action close)
+        public event Action BuyClicked;
+        public event Action CloseClicked;
+
+        private void Awake()
         {
-            level = getLevel;
-            cost = getCost;
-            canBuy = affordable;
-            var iconImage = FindDeep(transform, "Icon")?.GetComponent<Image>();
-            if (iconImage != null) iconImage.sprite = icon;
-            slider = GetComponentInChildren<Slider>(true);
-            foreach (var text in GetComponentsInChildren<TMP_Text>(true))
-            {
-                if (text.gameObject.name == "Level (TMP)") levelText = text;
-            }
-            var coin = FindDeep(transform, "Coin");
-            if (coin != null) costText = coin.GetComponentInChildren<TMP_Text>(true);
-            upgradeButton = FindDeep(transform, "Upgrade")?.GetComponent<Button>();
-            var closeButton = FindDeep(transform, "Close")?.GetComponent<Button>();
-            if (upgradeButton != null) upgradeButton.onClick.AddListener(() => buy());
-            if (closeButton != null) closeButton.onClick.AddListener(() => close());
-            Refresh();
+            if (upgradeButton != null) upgradeButton.onClick.AddListener(OnBuy);
+            if (closeButton != null) closeButton.onClick.AddListener(OnClose);
         }
 
-        public void Refresh()
+        public void SetIcon(Sprite icon)
         {
-            if (level == null) return;
-            var current = level();
-            if (levelText != null) levelText.text = "Lv " + current + " / 10";
-            if (slider != null) slider.value = Mathf.Clamp01((current - 1f) / 9f);
-            if (costText != null) costText.text = current >= 10 ? "MAX" : cost() + " Coin";
-            if (upgradeButton != null) upgradeButton.interactable = current < 10 && canBuy();
+            if (iconImage != null) iconImage.sprite = icon;
+        }
+
+        public void Render(int level, string cost, string cashout, bool canBuy)
+        {
+            if (levelText != null) levelText.text = "Lv " + level + " / 10";
+            if (slider != null) slider.value = Mathf.Clamp01((level - 1f) / 9f);
+            if (costText != null) costText.text = cashout + " Coin";
+            if (buttonCostText != null) buttonCostText.text = level >= 10 ? "MAX" : cost + " Coin";
+            if (upgradeButton != null) upgradeButton.interactable = level < 10 && canBuy;
+        }
+
+        private void OnBuy() => BuyClicked?.Invoke();
+        private void OnClose() => CloseClicked?.Invoke();
+
+        private void OnDestroy()
+        {
+            if (upgradeButton != null) upgradeButton.onClick.RemoveListener(OnBuy);
+            if (closeButton != null) closeButton.onClick.RemoveListener(OnClose);
+            BuyClicked = null;
+            CloseClicked = null;
         }
 
         public static void ValidatePrefab(GameObject prefab)
         {
-            //no-op
-        }
-
-        private static Transform FindDeep(Transform parent, string name)
-        {
-            if (parent.name == name) return parent;
-            for (var i = 0; i < parent.childCount; i++)
-            {
-                var match = FindDeep(parent.GetChild(i), name);
-                if (match != null) return match;
-            }
-            return null;
+            if (prefab == null) throw new InvalidOperationException("ConstructionUpgradeView prefab is null.");
+            var view = prefab.GetComponent<ConstructionUpgradeView>();
+            if (view == null) throw new InvalidOperationException("ConstructionUpgradeView prefab is missing ConstructionUpgradeView component.");
+            if (view.upgradeButton == null) throw new InvalidOperationException("ConstructionUpgradeView prefab: upgradeButton is not assigned.");
+            if (view.closeButton == null) throw new InvalidOperationException("ConstructionUpgradeView prefab: closeButton is not assigned.");
+            if (view.costText == null || view.buttonCostText == null)
+                throw new InvalidOperationException("ConstructionUpgradeView prefab: cashout or button cost text is not assigned.");
         }
     }
 }

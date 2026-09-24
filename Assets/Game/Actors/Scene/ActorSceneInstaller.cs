@@ -8,6 +8,7 @@ namespace Farm.Actors
     {
         [SerializeField] private MarketLayout market;
         [SerializeField] private Transform actorParent;
+        [SerializeField] private ActorNavigationStrategy navigationStrategy;
         [SerializeField, Min(0)] private int initialCustomerCount = 1;
 
         public ActorCoordinator Coordinator { get; private set; }
@@ -16,6 +17,7 @@ namespace Farm.Actors
         public Transform WorkerOrigin => market != null ? market.WorkerOrigin : null;
         public event Action<int, int> HarvestRequested;
         public event Action<int, int> SaleRequested;
+        public ActorNavigationStrategy NavigationStrategy => navigationStrategy;
 
         public bool HasValidMarket => market != null && market.HasRequiredAnchors;
 
@@ -27,12 +29,22 @@ namespace Farm.Actors
                 Debug.LogError("Actor scene references or Market dock anchors are missing.", this);
                 return false;
             }
+            if (navigationStrategy == null)
+            {
+                Debug.LogError("Navigation strategy is not assigned on ActorSceneInstaller.", this);
+                return false;
+            }
+            if (!navigationStrategy.Validate(workerPrefab, customerPrefab, out var navError))
+            {
+                Debug.LogError("Navigation validation failed: " + navError, this);
+                return false;
+            }
+            navigationStrategy.Prepare();
 
             Coordinator = new ActorCoordinator(
-                new WorkerFactory(workerPrefab, actorParent != null ? actorParent : transform),
-                new CustomerFactory(customerPrefab, actorParent != null ? actorParent : transform),
+                new WorkerFactory(workerPrefab, actorParent != null ? actorParent : transform, navigationStrategy),
+                new CustomerFactory(customerPrefab, actorParent != null ? actorParent : transform, navigationStrategy),
                 market);
-            WorldQuery = new AstarWorldQuery();
             Coordinator.HarvestRequested += (workerId, resourceId) => HarvestRequested?.Invoke(workerId, resourceId);
             Coordinator.SaleRequested += (workerId, customerId) => SaleRequested?.Invoke(workerId, customerId);
             Coordinator.TargetCustomerCount = Mathf.Max(0, customerTarget);
@@ -68,7 +80,7 @@ namespace Farm.Actors
         {
             Coordinator?.Dispose();
             Coordinator = null;
-            WorldQuery = null;
+            if (navigationStrategy != null) navigationStrategy.Cleanup();
             HarvestRequested = null;
             SaleRequested = null;
         }

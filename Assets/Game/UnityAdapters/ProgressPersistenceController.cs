@@ -74,6 +74,8 @@ namespace Farm.UnityAdapters
             catch (Exception error) { Debug.LogException(error, this); }
         }
 
+        public void StopSaving() => canSave = false;
+
         private void OnDestroy()
         {
             if (wallet != null) wallet.BalanceChanged -= OnBalanceChanged;

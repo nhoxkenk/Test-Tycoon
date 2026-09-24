@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Farm.Economy;
 using Farm.Simulation;
@@ -21,28 +22,37 @@ namespace Farm.UnityAdapters
         private GameObject panel;
         private Button navButton;
 
-        public void Initialize(Canvas canvas, GameObject sectionPrefab, GameObject itemPrefab,
-            UpgradeConfig[] configs, ProgressionService service, IWalletReader reader)
+        public void Initialize(Canvas canvas, Button upgradeNavButton, GameObject sectionPrefab,
+            GameObject itemPrefab, UpgradeConfig[] configs, ProgressionService service, IWalletReader reader)
         {
             progression = service;
             wallet = reader;
-            var navTransform = canvas.transform.Find("Bot/MainBotBarView/BotBarItem/Button");
-            navButton = navTransform != null ? navTransform.GetComponent<Button>() : null;
-            if (navButton == null) throw new MissingReferenceException("MainView bottom Upgrade button is missing.");
+            navButton = upgradeNavButton;
+            if (navButton == null) throw new MissingReferenceException("Upgrade navigation button is missing.");
             navButton.onClick.AddListener(Open);
-            var navIcon = FindDeep(navTransform, "IconImage")?.GetComponent<Image>();
-            var menuConfig = System.Array.Find(configs, config => config != null && config.Id == "income_all_x2");
+
+            var menuConfig = Array.Find(configs, config => config != null && config.Id == "income_all_x2");
+            var navIcon = navButton.GetComponentInChildren<Image>();
             if (navIcon != null && menuConfig != null) navIcon.sprite = menuConfig.Icon;
+
             panel = Instantiate(sectionPrefab, canvas.transform);
             panel.name = "Upgrade Section";
             var blocker = panel.GetComponent<Image>();
-            if (blocker == null) blocker = panel.AddComponent<Image>();
-            blocker.color = new Color(0, 0, 0, .62f);
-            blocker.raycastTarget = true;
+            if (blocker != null)
+            {
+                blocker.color = new Color(0, 0, 0, .62f);
+                blocker.raycastTarget = true;
+            }
             var sectionCanvas = panel.GetComponent<Canvas>();
             if (sectionCanvas != null) sectionCanvas.sortingOrder = 100;
-            var close = FindDeep(panel.transform, "Close")?.GetComponent<Button>();
-            if (close != null) close.onClick.AddListener(Close);
+            var close = panel.GetComponentInChildren<Button>(true);
+            if (close != null && close.gameObject.name == "Close") close.onClick.AddListener(Close);
+            else
+            {
+                // Fallback: search for a button named Close
+                foreach (var btn in panel.GetComponentsInChildren<Button>(true))
+                    if (btn.gameObject.name == "Close") { btn.onClick.AddListener(Close); break; }
+            }
             var content = panel.transform.Find("Scroll View/Viewport/Content");
             if (content == null) content = FindContent(panel.transform);
             if (content == null) throw new MissingReferenceException("UpgradeView prefab has no scroll Content transform.");
@@ -54,7 +64,7 @@ namespace Farm.UnityAdapters
                 var row = Instantiate(itemPrefab, content, false);
                 row.name = config.Id;
                 var item = row.GetComponent<UpgradeItemView>();
-                if (item == null) item = row.AddComponent<UpgradeItemView>();
+                if (item == null) throw new MissingReferenceException("UpgradeItemView prefab is missing UpgradeItemView component on " + config.Id);
                 var entry = new Entry { Config = config, Definition = definition, View = item };
                 item.Bind(config.Icon, config.Title, config.Description, "", false, () => progression.TryPurchase(config.Id));
                 entries.Add(entry);
@@ -103,22 +113,6 @@ namespace Farm.UnityAdapters
             foreach (var group in root.GetComponentsInChildren<VerticalLayoutGroup>(true))
                 if (group.gameObject.name == "Content") return group.transform;
             return null;
-        }
-
-        private static Transform FindDeep(Transform root, string name)
-        {
-            if (root.name == name) return root;
-            for (var i = 0; i < root.childCount; i++)
-            {
-                var match = FindDeep(root.GetChild(i), name);
-                if (match != null) return match;
-            }
-            return null;
-        }
-
-        public static void ValidatePrefabs(Canvas canvas, GameObject sectionPrefab, GameObject upgradeSectionPrefab)
-        {
-            //no-op
         }
 
         private void OnDestroy()

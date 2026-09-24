@@ -4,6 +4,8 @@ using Farm.Economy;
 using Farm.Farming;
 using Farm.Simulation;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Farm.UnityAdapters
 {
@@ -16,10 +18,10 @@ namespace Farm.UnityAdapters
         private readonly Camera gameCamera;
         private readonly Dictionary<int, PlotSlotView> plotById = new Dictionary<int, PlotSlotView>();
         private readonly Dictionary<int, PlotUiView> uiById = new Dictionary<int, PlotUiView>();
+        private readonly List<RaycastResult> uiHits = new List<RaycastResult>();
         private bool initialized;
         private ProgressionService progression;
-        private Canvas mainCanvas;
-        private GameObject upgradePrefab;
+        private int openUpgradePlotId = -1;
 
         public event Action<PlotSlotView> ConstructionVisible;
 
@@ -50,7 +52,6 @@ namespace Farm.UnityAdapters
             {
                 var ui = uiById[plot.PlotId];
                 ui.Initialize(plot.PlotId, plot.Resource, gameCamera);
-                plot.BindInteractionCamera(gameCamera);
                 plot.BuildRequested += OnBuildRequested;
                 plot.ConstructionVisible += OnConstructionVisible;
                 plot.UpgradeRequested += OnUpgradeRequested;
@@ -60,12 +61,47 @@ namespace Farm.UnityAdapters
 
         public void TickPresentation()
         {
+            if (Input.touchCount > 0)
+            {
+                for (var i = 0; i < Input.touchCount; i++)
+                {
+                    var touch = Input.GetTouch(i);
+                    if (touch.phase == TouchPhase.Began) RouteScreenClick(touch.position, touch.fingerId);
+                }
+            }
+            else if (Input.GetMouseButtonDown(0)) RouteScreenClick(Input.mousePosition, -1);
+
             foreach (var entry in uiById)
             {
                 var state = construction.GetPlot(entry.Key);
                 if (state.State == PlotBuildState.Building)
                     entry.Value.UpdateBuild(state.RemainingBuildSeconds);
             }
+        }
+
+        private void RouteScreenClick(Vector2 position, int pointerId)
+        {
+            var eventSystem = EventSystem.current;
+            if (eventSystem != null)
+            {
+                uiHits.Clear();
+                eventSystem.RaycastAll(new PointerEventData(eventSystem) { position = position, pointerId = pointerId }, uiHits);
+                foreach (var uiHit in uiHits)
+                    if (uiHit.module is GraphicRaycaster) return;
+            }
+
+            if (Physics.Raycast(gameCamera.ScreenPointToRay(position), out var hit, 1000f))
+            {
+                var plot = hit.collider.GetComponentInParent<PlotSlotView>();
+                if (plot != null && plotById.ContainsKey(plot.PlotId))
+                {
+                    plot.RequestInteraction();
+                    return;
+                }
+            }
+
+            CloseOpenUpgrade();
+            foreach (var ui in uiById.Values) ui.HideInteractiveUi();
         }
 
         public void RestorePresentation()
@@ -82,17 +118,16 @@ namespace Farm.UnityAdapters
             }
         }
 
-        public void BindProgression(ProgressionService service, Canvas canvas, GameObject plotUpgradePrefab)
+        public void BindProgression(ProgressionService service, ConstructionUpgradeView upgradePrefab)
         {
             progression = service ?? throw new ArgumentNullException(nameof(service));
-            mainCanvas = canvas;
-            upgradePrefab = plotUpgradePrefab;
             foreach (var plot in plots)
-                uiById[plot.PlotId].BindProgression(plot.PlotId, progression, wallet, mainCanvas, upgradePrefab);
+                uiById[plot.PlotId].BindProgression(plot.PlotId, progression, wallet, upgradePrefab);
         }
 
         private void OnBuildRequested(int plotId)
         {
+            CloseOpenUpgrade();
             foreach (var ui in uiById.Values) ui.HideUnlock();
             var cost = construction.GetPlot(plotId).Definition.BuildCost;
             uiById[plotId].ShowUnlock(wallet.GetBalance(cost.Currency).Amount >= cost.Amount);
@@ -117,12 +152,25 @@ namespace Farm.UnityAdapters
             ConstructionVisible?.Invoke(plot);
         }
 
-        private void OnUpgradeRequested(PlotSlotView plot) => uiById[plot.PlotId].ShowUpgrade();
+        private void OnUpgradeRequested(PlotSlotView plot)
+        {
+            CloseOpenUpgrade();
+            openUpgradePlotId = plot.PlotId;
+            uiById[plot.PlotId].ShowUpgrade();
+        }
+
+        private void CloseOpenUpgrade()
+        {
+            if (openUpgradePlotId >= 0 && uiById.TryGetValue(openUpgradePlotId, out var openUi))
+                openUi.CloseUpgrade();
+            openUpgradePlotId = -1;
+        }
 
         public void Dispose()
         {
             if (!initialized) return;
             initialized = false;
+            CloseOpenUpgrade();
             construction.PlotChanged -= OnPlotChanged;
             foreach (var plot in plots)
             {
