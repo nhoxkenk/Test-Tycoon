@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Farm.Actors;
 using Farm.Economy;
 using Farm.Farming;
 using Farm.Simulation;
@@ -15,13 +16,7 @@ namespace Farm.Bootstrap
         [SerializeField] private ActorSceneInstaller actors;
         [SerializeField] private PlotSlotView[] plots;
         [SerializeField] private WalletHudView hud;
-        [SerializeField] private UpgradeConfig[] upgrades;
         [SerializeField] private Canvas mainCanvas;
-        [SerializeField] private GameObject plotUpgradePrefab;
-        [SerializeField] private GameObject upgradeSectionPrefab;
-        [SerializeField] private GameObject upgradeItemPrefab;
-        [SerializeField] private GameObject payEffectPrefab;
-        [SerializeField] private GameObject buildDoneEffectPrefab;
 
         private PlotConstructionController plotController;
         private HarvestMarketCoordinator tradeCoordinator;
@@ -58,8 +53,19 @@ namespace Farm.Bootstrap
             if (!Money.TryParse(CurrencyId.Coin, initialBalance, out var initialCoin))
                 throw new InvalidOperationException("Initial balance must be a non-negative integer.");
             var gameCamera = Camera.main;
-            if (plots == null || plots.Length == 0 || actors == null || gameCamera == null)
+            if (plots == null || plots.Length == 0 || actors == null || gameCamera == null ||
+                mainCanvas == null || !actors.HasValidMarket)
                 throw new InvalidOperationException("Farm scene references are missing.");
+
+            var plotUpgradePrefab = LoadPrefab("Farm/UI/ConstructionUpgradeView");
+            var upgradeSectionPrefab = LoadPrefab("Farm/UI/UpgradeView");
+            var upgradeItemPrefab = LoadPrefab("Farm/UI/UpgradeItemView");
+            var payEffectPrefab = LoadPrefab("Farm/Effects/EffPay");
+            var buildDoneEffectPrefab = LoadPrefab("Farm/Effects/EffBuildDone");
+            var workerPrefab = LoadActor<WorkerActor>("Farm/Actors/Delivery");
+            var customerPrefab = LoadActor<CustomerActor>("Farm/Actors/Customer");
+            UpgradeMenuView.ValidatePrefabs(mainCanvas, upgradeSectionPrefab, upgradeItemPrefab);
+            ConstructionUpgradeView.ValidatePrefab(plotUpgradePrefab);
 
             var buildDefinitions = new List<PlotDefinition>(plots.Length);
             var harvestDefinitions = new List<HarvestDefinition>(plots.Length);
@@ -68,6 +74,7 @@ namespace Farm.Bootstrap
             foreach (var plot in plots)
             {
                 if (plot == null || plot.Resource == null || plotBuildTimes.ContainsKey(plot.PlotId) ||
+                    plot.GetComponent<PlotUiView>() == null ||
                     string.IsNullOrWhiteSpace(plot.Resource.ResourceId) ||
                     !Money.TryParse(CurrencyId.Coin, plot.Resource.UnlockCost, out var cost) ||
                     !Money.TryParse(CurrencyId.Coin, plot.Resource.BatchSaleValue, out var saleValue))
@@ -89,14 +96,19 @@ namespace Farm.Bootstrap
                 levelCosts.Add(plot.PlotId, costs);
             }
 
-            var configuredUpgrades = upgrades != null && upgrades.Length > 0 ? upgrades : Resources.LoadAll<UpgradeConfig>("Upgrades");
+            var configuredUpgrades = Resources.LoadAll<UpgradeConfig>("Upgrades");
+            if (configuredUpgrades.Length != 7)
+                throw new InvalidOperationException("Resources/Upgrades must contain exactly seven upgrade configs; found " + configuredUpgrades.Length + ".");
             Array.Sort(configuredUpgrades, (left, right) => UpgradeOrder(left).CompareTo(UpgradeOrder(right)));
-            upgrades = configuredUpgrades;
             var upgradeDefinitions = new List<UpgradeDefinition>();
+            var upgradeIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var config in configuredUpgrades)
             {
-                if (config == null || !Money.TryParse(CurrencyId.Coin, config.CoinCost, out var upgradeCost))
-                    throw new InvalidOperationException("An upgrade config is missing or has invalid cost.");
+                if (config == null || string.IsNullOrWhiteSpace(config.Id) || UpgradeOrder(config) == int.MaxValue ||
+                    !Money.TryParse(CurrencyId.Coin, config.CoinCost, out var upgradeCost))
+                    throw new InvalidOperationException("Resources/Upgrades has a missing, unknown, or invalid upgrade config: " + (config != null ? config.Id : "null") + ".");
+                if (!upgradeIds.Add(config.Id))
+                    throw new InvalidOperationException("Resources/Upgrades has duplicate upgrade ID: " + config.Id + ".");
                 var kind = config.UpgradeEffect == UpgradeConfig.Effect.AddCustomers ? UpgradeKind.CustomerCount :
                     config.UpgradeEffect == UpgradeConfig.Effect.DoubleAllPlots ? UpgradeKind.AllPlotsIncome : UpgradeKind.PlotIncome;
                 upgradeDefinitions.Add(new UpgradeDefinition(config.Id, kind, config.Amount, config.PlotId, upgradeCost));
@@ -134,13 +146,11 @@ namespace Farm.Bootstrap
                 upgradeDefinitions, actors.SetTargetCustomerCount, actors.InitialCustomerCount);
             if (loadedSnapshot != null && !progression.RestorePurchasedUpgradeIds(loadedSnapshot.purchasedUpgradeIds))
                 throw new InvalidOperationException("Validated upgrade records could not be restored.");
-            if (!actors.Initialize(progression.CustomerTargetCount)) throw new InvalidOperationException("Actor scene could not be initialized.");
+            if (!actors.Initialize(workerPrefab, customerPrefab, progression.CustomerTargetCount))
+                throw new InvalidOperationException("Actor scene could not be initialized.");
             plotController.BindProgression(progression, mainCanvas, plotUpgradePrefab);
-            if (mainCanvas != null && upgrades.Length > 0 && upgradeSectionPrefab != null && upgradeItemPrefab != null)
-            {
-                upgradeMenu = gameObject.AddComponent<UpgradeMenuView>();
-                upgradeMenu.Initialize(mainCanvas, upgradeSectionPrefab, upgradeItemPrefab, upgrades, progression, wallet);
-            }
+            upgradeMenu = gameObject.AddComponent<UpgradeMenuView>();
+            upgradeMenu.Initialize(mainCanvas, upgradeSectionPrefab, upgradeItemPrefab, configuredUpgrades, progression, wallet);
             tradeCoordinator = new HarvestMarketCoordinator(plotController, actors, harvest, market, plots);
             feedback = gameObject.AddComponent<ProgressFeedbackView>();
             feedback.Initialize(construction, market, actors, plots, payEffectPrefab, buildDoneEffectPrefab);
@@ -155,6 +165,16 @@ namespace Farm.Bootstrap
         }
 
         private void OnDestroy() => TearDown();
+
+        private static GameObject LoadPrefab(string key) =>
+            Resources.Load<GameObject>(key) ?? throw new InvalidOperationException("Missing Resources prefab: " + key + ".");
+
+        private static T LoadActor<T>(string key) where T : Component
+        {
+            var actor = LoadPrefab(key).GetComponent<T>();
+            if (actor == null) throw new InvalidOperationException("Resources prefab " + key + " is missing " + typeof(T).Name + ".");
+            return actor;
+        }
 
         private static int UpgradeOrder(UpgradeConfig config)
         {

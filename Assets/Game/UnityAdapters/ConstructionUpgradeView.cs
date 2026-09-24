@@ -47,6 +47,11 @@ namespace Farm.UnityAdapters
             if (upgradeButton != null) upgradeButton.interactable = current < 10 && canBuy();
         }
 
+        public static void ValidatePrefab(GameObject prefab)
+        {
+            //no-op
+        }
+
         private static Transform FindDeep(Transform parent, string name)
         {
             if (parent.name == name) return parent;

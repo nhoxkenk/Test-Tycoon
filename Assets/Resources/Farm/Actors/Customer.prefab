@@ -1349,7 +1349,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3aa38e28766a681449c5edb92b19ce86, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.CustomerActor
+  m_EditorClassIdentifier: Farm.Actors::Farm.Actors.CustomerActor
 --- !u!114 &3895487435584954550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1361,7 +1361,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 36c208422425189429a6edad97b3295b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.ActorCarryView
+  m_EditorClassIdentifier: Farm.Actors::Farm.Actors.ActorCarryView
   tomatoPrefab: {fileID: 431050899201095724, guid: 7f43ad0a1dc9942deb52963a8ee6e6f4, type: 3}
   carryPoints:
   - {fileID: 4363290341290070341}

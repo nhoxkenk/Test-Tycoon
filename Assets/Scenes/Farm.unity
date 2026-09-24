@@ -386,7 +386,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a5355c772f9ba540a39f61c98093cc4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.ActorSceneInstaller
+  m_EditorClassIdentifier: Farm.Actors::Farm.Actors.ActorSceneInstaller
   workerPrefab: {fileID: 4429770788481987755, guid: a798966e7b2044a12be9b4ba810e52ad, type: 3}
   customerPrefab: {fileID: 8460677196407964516, guid: 9e73c309783284fd2bb50baca4fe3da9, type: 3}
   market: {fileID: 249267417}
@@ -665,7 +665,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c89643a396091447a08b29c01e140b1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.MarketLayout
+  m_EditorClassIdentifier: Farm.Actors::Farm.Actors.MarketLayout
 --- !u!1 &255517472
 GameObject:
   m_ObjectHideFlags: 0

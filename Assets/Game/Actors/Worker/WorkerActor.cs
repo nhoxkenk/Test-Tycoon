@@ -1,10 +1,9 @@
 using System;
 using Farm.Actors;
-using Farm.Simulation;
 using UnityEngine;
 using Pathfinding;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
     [RequireComponent(typeof(AIPath), typeof(Seeker), typeof(Pathfinding.RVO.RVOController))]
     public sealed class WorkerActor : MonoBehaviour

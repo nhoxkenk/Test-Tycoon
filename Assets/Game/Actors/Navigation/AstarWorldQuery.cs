@@ -2,7 +2,7 @@ using Farm.Actors;
 using Pathfinding;
 using UnityEngine;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
     public static class WorldPointExtensions
     {

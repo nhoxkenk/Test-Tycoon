@@ -1,7 +1,7 @@
 using System;
 using Farm.Actors;
 
-namespace Farm.Simulation
+namespace Farm.Actors
 {
     public enum WorkerState
     {

@@ -2,12 +2,10 @@ using System;
 using Farm.Actors;
 using UnityEngine;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
     public sealed class ActorSceneInstaller : MonoBehaviour
     {
-        [SerializeField] private WorkerActor workerPrefab;
-        [SerializeField] private CustomerActor customerPrefab;
         [SerializeField] private MarketLayout market;
         [SerializeField] private Transform actorParent;
         [SerializeField, Min(0)] private int initialCustomerCount = 1;
@@ -19,9 +17,9 @@ namespace Farm.UnityAdapters
         public event Action<int, int> HarvestRequested;
         public event Action<int, int> SaleRequested;
 
-        public bool Initialize() => Initialize(initialCustomerCount);
+        public bool HasValidMarket => market != null && market.HasRequiredAnchors;
 
-        public bool Initialize(int customerTarget)
+        public bool Initialize(WorkerActor workerPrefab, CustomerActor customerPrefab, int customerTarget)
         {
             if (Coordinator != null) return true;
             if (workerPrefab == null || customerPrefab == null || market == null || !market.Initialize())

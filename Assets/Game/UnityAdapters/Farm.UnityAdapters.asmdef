@@ -1,6 +1,6 @@
 {
   "name": "Farm.UnityAdapters",
   "rootNamespace": "Farm.UnityAdapters",
-  "references": ["Farm.Actors", "Farm.Simulation", "Farm.Economy", "Farm.Farming", "AstarPathfindingProject", "UnityEngine.UI", "Unity.TextMeshPro"],
+  "references": ["Farm.Actors", "Farm.Simulation", "Farm.Economy", "Farm.Farming", "UnityEngine.UI", "Unity.TextMeshPro"],
   "autoReferenced": false
 }

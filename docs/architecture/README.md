@@ -21,6 +21,7 @@ Mỗi file tập trung vào một chủ đề để đọc, phân tích và sử
 | [13-reflection-factory.md](13-reflection-factory.md) | Reflection Factory, Activator và ranh giới DI |
 | [14-scene-layout-portrait.md](14-scene-layout-portrait.md) | Bố cục Farm, camera dọc và các mốc scene 07–09 |
 | [15-final-implementation-review.md](15-final-implementation-review.md) | Phạm vi còn lại 10–14 và các quyết định cần xác nhận trước khi code |
+| [16-actor-ownership-bootstrap-resources-plan.md](16-actor-ownership-bootstrap-resources-plan.md) | Plan chuyển actor về Actors asmdef và load asset Bootstrap qua Resources; chưa triển khai |
 
 Nên bắt đầu từ 01 (module boundaries) và 02 (DI/lifecycle), sau đó chọn từng chủ đề cần bàn. Mỗi file ghi bài toán, phương án đề xuất, trade-off, câu hỏi mở và điều kiện cần giữ.
 

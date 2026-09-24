@@ -116,6 +116,11 @@ namespace Farm.UnityAdapters
             return null;
         }
 
+        public static void ValidatePrefabs(Canvas canvas, GameObject sectionPrefab, GameObject upgradeSectionPrefab)
+        {
+            //no-op
+        }
+
         private void OnDestroy()
         {
             if (navButton != null) navButton.onClick.RemoveListener(Open);

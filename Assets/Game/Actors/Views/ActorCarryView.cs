@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
     // Visual only. The harvest batch remains the source of truth for quantity and price.
     public sealed class ActorCarryView : MonoBehaviour

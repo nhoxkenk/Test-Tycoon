@@ -3,53 +3,53 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Pathfinding;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
-    public sealed class CustomerFactory
+    public sealed class WorkerFactory
     {
-        private readonly CustomerActor prefab;
+        private readonly WorkerActor prefab;
         private readonly Transform parent;
-        private readonly ObjectPool<CustomerActor> pool;
+        private readonly ObjectPool<WorkerActor> pool;
 
-        public CustomerFactory(CustomerActor prefab, Transform parent)
+        public WorkerFactory(WorkerActor prefab, Transform parent)
         {
             this.prefab = prefab;
             this.parent = parent;
-            pool = new ObjectPool<CustomerActor>(Create, OnGet, OnRelease, OnDestroy, true, 2, 32);
+            pool = new ObjectPool<WorkerActor>(Create, OnGet, OnRelease, OnDestroy, true, 2, 32);
         }
 
-        public CustomerActor Spawn(int actorId, int slotId, WorldPoint start, WorldPoint table, WorldPoint exit)
+        public WorkerActor Spawn(int actorId, int resourceId, WorldPoint origin, WorldPoint harvestPoint)
         {
             var actor = pool.Get();
-            if (actor.Initialize(actorId, slotId, start, table, exit,
+            if (actor.Initialize(actorId, resourceId, origin, harvestPoint,
                     new AstarActorNavigation(actor.GetComponent<AIPath>()))) return actor;
             pool.Release(actor);
             return null;
         }
 
-        public void Release(CustomerActor actor)
+        public void Release(WorkerActor actor)
         {
             if (actor != null) pool.Release(actor);
         }
         public void Dispose() => pool.Dispose();
 
-        private CustomerActor Create()
+        private WorkerActor Create()
         {
             var actor = Object.Instantiate(prefab, parent);
             actor.gameObject.SetActive(false);
             return actor;
         }
 
-        private static void OnGet(CustomerActor actor) => actor.gameObject.SetActive(true);
+        private static void OnGet(WorkerActor actor) => actor.gameObject.SetActive(true);
 
-        private static void OnRelease(CustomerActor actor)
+        private static void OnRelease(WorkerActor actor)
         {
             if (actor == null) return;
             actor.ResetForPool();
             actor.gameObject.SetActive(false);
         }
 
-        private static void OnDestroy(CustomerActor actor)
+        private static void OnDestroy(WorkerActor actor)
         {
             if (actor != null) Object.Destroy(actor.gameObject);
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Farm.Actors;
 using Farm.Farming;
 using Farm.Simulation;
 using UnityEngine;

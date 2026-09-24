@@ -358,7 +358,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c89643a396091447a08b29c01e140b1, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Farm.UnityAdapters::Farm.UnityAdapters.MarketLayout
+  m_EditorClassIdentifier: Farm.Actors::Farm.Actors.MarketLayout
 --- !u!1 &5823776604973698877
 GameObject:
   m_ObjectHideFlags: 0

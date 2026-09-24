@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
     public sealed class MarketLayout : MonoBehaviour
     {
@@ -12,6 +12,19 @@ namespace Farm.UnityAdapters
         public Transform CustomerEnd { get; private set; }
         public Transform WorkerOrigin { get; private set; }
         public int SlotCount => customerPoints.Count;
+
+        public bool HasRequiredAnchors
+        {
+            get
+            {
+                var docks = transform.Find("Dock");
+                if (transform.Find("CustomerStart") == null || transform.Find("CustomerEnd") == null ||
+                    transform.Find("DeliveryEnd") == null || docks == null || docks.childCount == 0) return false;
+                for (var i = 0; i < docks.childCount; i++)
+                    if (docks.GetChild(i).Find("Delivery") == null) return false;
+                return true;
+            }
+        }
 
         public bool Initialize()
         {

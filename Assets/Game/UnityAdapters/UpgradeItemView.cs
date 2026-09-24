@@ -38,6 +38,7 @@ namespace Farm.UnityAdapters
                 foreach (var image in icons)
                     if (image.gameObject.name == "Icon") image.sprite = icon;
             if (button != null) button.interactable = interactable;
+            gameObject.SetActive(interactable);
         }
 
         private void OnDestroy()

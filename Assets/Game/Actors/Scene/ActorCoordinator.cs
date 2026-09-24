@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
     // Scene-level owner of pooled actors and table reservations.
     public sealed class ActorCoordinator : IDisposable
@@ -88,14 +88,14 @@ namespace Farm.UnityAdapters
 
         public bool CanHarvest(int workerId, int resourceId) =>
             activeWorkers.TryGetValue(workerId, out var worker) &&
-            worker.ResourceId == resourceId && worker.State == Farm.Simulation.WorkerState.Harvest && !worker.HasCargo;
+            worker.ResourceId == resourceId && worker.State == WorkerState.Harvest && !worker.HasCargo;
 
         public bool CompleteHarvest(int workerId, int quantity)
             => CompleteHarvest(workerId, quantity, null);
 
         public bool CompleteHarvest(int workerId, int quantity, Vector3[] fromPositions)
         {
-            if (!activeWorkers.TryGetValue(workerId, out var worker) || worker.State != Farm.Simulation.WorkerState.Harvest)
+            if (!activeWorkers.TryGetValue(workerId, out var worker) || worker.State != WorkerState.Harvest)
                 return false;
             worker.ShowCargo(quantity, fromPositions);
             worker.CompleteHarvest();
@@ -108,7 +108,7 @@ namespace Farm.UnityAdapters
             if (!activeWorkers.TryGetValue(workerId, out var worker) ||
                 worker.CustomerId != customerId ||
                 !activeCustomers.TryGetValue(customerId, out var customer) ||
-                worker.State != Farm.Simulation.WorkerState.Cashout || !customer.IsReady)
+                worker.State != WorkerState.Cashout || !customer.IsReady)
                 return false;
 
             var fromPositions = worker.CargoPositions;

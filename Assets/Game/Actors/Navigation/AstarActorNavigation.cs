@@ -3,7 +3,7 @@ using Farm.Actors;
 using Pathfinding;
 using UnityEngine;
 
-namespace Farm.UnityAdapters
+namespace Farm.Actors
 {
     public sealed class AstarActorNavigation : IActorNavigation, IDisposable
     {
