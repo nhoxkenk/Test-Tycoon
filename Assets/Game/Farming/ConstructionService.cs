@@ -47,6 +47,8 @@ namespace Farm.Farming
         private readonly Dictionary<int, PlotSession> plots = new Dictionary<int, PlotSession>();
 
         public event Action<PlotSession> PlotChanged;
+        public event Action<PlotSession> BuildStarted;
+        public event Action<PlotSession> BuildCompleted;
 
         public ConstructionService(IWalletTransactions wallet, IEnumerable<PlotDefinition> definitions)
         {
@@ -60,6 +62,24 @@ namespace Farm.Farming
         }
 
         public PlotSession GetPlot(int id) => plots.TryGetValue(id, out var plot) ? plot : null;
+        public int[] GetPlotIds()
+        {
+            var ids = new int[plots.Count];
+            plots.Keys.CopyTo(ids, 0);
+            return ids;
+        }
+
+        public bool RestorePlot(int id, PlotBuildState state, float remainingBuildSeconds)
+        {
+            if (!plots.TryGetValue(id, out var plot) || !Enum.IsDefined(typeof(PlotBuildState), state) ||
+                float.IsNaN(remainingBuildSeconds) || float.IsInfinity(remainingBuildSeconds) || remainingBuildSeconds < 0 ||
+                (state != PlotBuildState.Building && remainingBuildSeconds != 0) ||
+                (state == PlotBuildState.Building && remainingBuildSeconds > plot.Definition.BuildSeconds)) return false;
+            plot.State = state;
+            plot.RemainingBuildSeconds = state == PlotBuildState.Building ? remainingBuildSeconds : 0;
+            PlotChanged?.Invoke(plot);
+            return true;
+        }
 
         public bool TryStartBuild(int id)
         {
@@ -69,6 +89,7 @@ namespace Farm.Farming
             plot.RemainingBuildSeconds = plot.Definition.BuildSeconds;
             plot.State = PlotBuildState.Building;
             PlotChanged?.Invoke(plot);
+            BuildStarted?.Invoke(plot);
             return true;
         }
 
@@ -83,6 +104,7 @@ namespace Farm.Farming
                 if (plot.RemainingBuildSeconds > 0) continue;
                 plot.State = PlotBuildState.Ready;
                 PlotChanged?.Invoke(plot);
+                BuildCompleted?.Invoke(plot);
             }
         }
     }

@@ -2,10 +2,11 @@ using System;
 using Farm.Actors;
 using Farm.Simulation;
 using UnityEngine;
+using Pathfinding;
 
 namespace Farm.UnityAdapters
 {
-    [RequireComponent(typeof(UnityEngine.AI.NavMeshAgent))]
+    [RequireComponent(typeof(AIPath), typeof(Seeker), typeof(Pathfinding.RVO.RVOController))]
     public sealed class WorkerActor : MonoBehaviour
     {
         private static readonly int IsMove = Animator.StringToHash("IsMove");
@@ -125,6 +126,7 @@ namespace Farm.UnityAdapters
             carryView?.Show(0);
             machine?.Stop();
             navigation?.Stop();
+            (navigation as IDisposable)?.Dispose();
             machine = null;
             context = null;
             navigation = null;

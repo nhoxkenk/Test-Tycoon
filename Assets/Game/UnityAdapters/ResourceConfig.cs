@@ -14,9 +14,10 @@ namespace Farm.UnityAdapters
         [SerializeField, Min(0)] private float regrowSeconds = 3f;
         [SerializeField] private string batchSaleValue = "2000";
         [SerializeField] private string productionText = "12.0k/min";
-        [Header("Future upgrade data")]
+        [Header("Upgrade data")]
         [SerializeField] private string upgradeCost = "4000";
         [SerializeField, Min(0)] private int profitPercentPerLevel = 10;
+        [SerializeField] private string[] levelUpgradeCosts = new string[9];
 
         public string ResourceId => resourceId;
         public string DisplayName => displayName;
@@ -29,5 +30,6 @@ namespace Farm.UnityAdapters
         public string ProductionText => productionText;
         public string UpgradeCost => upgradeCost;
         public int ProfitPercentPerLevel => profitPercentPerLevel;
+        public string[] LevelUpgradeCosts => levelUpgradeCosts;
     }
 }

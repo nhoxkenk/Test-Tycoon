@@ -20,6 +20,7 @@ Mỗi file tập trung vào một chủ đề để đọc, phân tích và sử
 | [12-persistence-validation.md](12-persistence-validation.md) | Save/load, lifecycle mobile và kiểm chứng |
 | [13-reflection-factory.md](13-reflection-factory.md) | Reflection Factory, Activator và ranh giới DI |
 | [14-scene-layout-portrait.md](14-scene-layout-portrait.md) | Bố cục Farm, camera dọc và các mốc scene 07–09 |
+| [15-final-implementation-review.md](15-final-implementation-review.md) | Phạm vi còn lại 10–14 và các quyết định cần xác nhận trước khi code |
 
 Nên bắt đầu từ 01 (module boundaries) và 02 (DI/lifecycle), sau đó chọn từng chủ đề cần bàn. Mỗi file ghi bài toán, phương án đề xuất, trade-off, câu hỏi mở và điều kiện cần giữ.
 

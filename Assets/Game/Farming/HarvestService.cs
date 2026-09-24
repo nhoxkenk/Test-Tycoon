@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Farm.Economy;
 
 namespace Farm.Farming
@@ -9,10 +10,11 @@ namespace Farm.Farming
         public int PlotId { get; }
         public string ResourceId { get; }
         public Money BatchValue { get; }
+        public int ProfitPercentPerLevel { get; }
         public float HarvestSeconds { get; }
         public float RegrowSeconds { get; }
 
-        public HarvestDefinition(int plotId, string resourceId, Money batchValue, float harvestSeconds, float regrowSeconds)
+        public HarvestDefinition(int plotId, string resourceId, Money batchValue, float harvestSeconds, float regrowSeconds, int profitPercentPerLevel = 0)
         {
             if (plotId < 0) throw new ArgumentOutOfRangeException(nameof(plotId));
             if (string.IsNullOrWhiteSpace(resourceId)) throw new ArgumentException("Resource ID is required.", nameof(resourceId));
@@ -20,9 +22,11 @@ namespace Farm.Farming
                 throw new ArgumentOutOfRangeException(nameof(harvestSeconds));
             if (regrowSeconds < 0 || float.IsNaN(regrowSeconds) || float.IsInfinity(regrowSeconds))
                 throw new ArgumentOutOfRangeException(nameof(regrowSeconds));
+            if (profitPercentPerLevel < 0) throw new ArgumentOutOfRangeException(nameof(profitPercentPerLevel));
             PlotId = plotId;
             ResourceId = resourceId;
             BatchValue = batchValue;
+            ProfitPercentPerLevel = profitPercentPerLevel;
             HarvestSeconds = harvestSeconds;
             RegrowSeconds = regrowSeconds;
         }
@@ -63,6 +67,9 @@ namespace Farm.Farming
         }
 
         private readonly Dictionary<int, PlotStock> plots = new Dictionary<int, PlotStock>();
+        private readonly Dictionary<int, int> levels = new Dictionary<int, int>();
+        private readonly HashSet<int> doubledPlots = new HashSet<int>();
+        private bool allPlotsDoubled;
         private readonly Dictionary<int, HarvestBatch> batchesByWorker = new Dictionary<int, HarvestBatch>();
         private long nextBatchId = 1;
 
@@ -76,7 +83,26 @@ namespace Farm.Farming
             {
                 if (definition == null) throw new ArgumentException("Harvest definition is null.", nameof(definitions));
                 plots.Add(definition.PlotId, new PlotStock(definition));
+                levels.Add(definition.PlotId, 1);
             }
+        }
+
+        public int GetLevel(int plotId) => levels.TryGetValue(plotId, out var level) ? level : 0;
+        public Money GetCurrentBatchValue(int plotId) => plots.TryGetValue(plotId, out var plot) ? CalculateValue(plot) : default;
+        public bool SetLevel(int plotId, int level)
+        {
+            if (!levels.ContainsKey(plotId) || level < 1 || level > 10) return false;
+            levels[plotId] = level;
+            return true;
+        }
+        public bool IsPlotIncomeDoubled(int plotId) => doubledPlots.Contains(plotId);
+        public bool IsAllIncomeDoubled => allPlotsDoubled;
+        public bool DoublePlotIncome(int plotId) => plots.ContainsKey(plotId) && doubledPlots.Add(plotId);
+        public bool DoubleAllIncome()
+        {
+            if (allPlotsDoubled) return false;
+            allPlotsDoubled = true;
+            return true;
         }
 
         public bool ActivatePlot(int plotId)
@@ -157,13 +183,25 @@ namespace Farm.Farming
                     plot.Quantity = 0;
                     plot.Regrowing = true;
                     plot.RegrowRemaining = plot.Definition.RegrowSeconds;
-                    var saleValue = MoneyMath.FloorAfterRatios(plot.Definition.BatchValue, Array.Empty<MoneyRatio>());
+                    var saleValue = CalculateValue(plot);
                     var batch = new HarvestBatch(nextBatchId++, plot.Definition, saleValue);
                     batchesByWorker.Add(workerId, batch);
                     StockChanged?.Invoke(plot.Definition.PlotId, 0);
                     BatchReady?.Invoke(workerId, batch);
                 }
             }
+        }
+
+        private Money CalculateValue(PlotStock plot)
+        {
+            var plotId = plot.Definition.PlotId;
+            var ratios = new List<MoneyRatio>(3)
+            {
+                new MoneyRatio(new BigInteger(100) + new BigInteger((levels[plotId] - 1)) * plot.Definition.ProfitPercentPerLevel, 100)
+            };
+            if (doubledPlots.Contains(plotId)) ratios.Add(new MoneyRatio(2, 1));
+            if (allPlotsDoubled) ratios.Add(new MoneyRatio(2, 1));
+            return MoneyMath.FloorAfterRatios(plot.Definition.BatchValue, ratios);
         }
 
         private static void StartIfReady(PlotStock plot)

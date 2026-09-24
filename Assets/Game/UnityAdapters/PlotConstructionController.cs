@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Farm.Economy;
 using Farm.Farming;
+using Farm.Simulation;
 using UnityEngine;
 
 namespace Farm.UnityAdapters
@@ -16,6 +17,9 @@ namespace Farm.UnityAdapters
         private readonly Dictionary<int, PlotSlotView> plotById = new Dictionary<int, PlotSlotView>();
         private readonly Dictionary<int, PlotUiView> uiById = new Dictionary<int, PlotUiView>();
         private bool initialized;
+        private ProgressionService progression;
+        private Canvas mainCanvas;
+        private GameObject upgradePrefab;
 
         public event Action<PlotSlotView> ConstructionVisible;
 
@@ -46,8 +50,10 @@ namespace Farm.UnityAdapters
             {
                 var ui = uiById[plot.PlotId];
                 ui.Initialize(plot.PlotId, plot.Resource, gameCamera);
+                plot.BindInteractionCamera(gameCamera);
                 plot.BuildRequested += OnBuildRequested;
                 plot.ConstructionVisible += OnConstructionVisible;
+                plot.UpgradeRequested += OnUpgradeRequested;
                 ui.UnlockConfirmed += OnUnlockConfirmed;
             }
         }
@@ -60,6 +66,29 @@ namespace Farm.UnityAdapters
                 if (state.State == PlotBuildState.Building)
                     entry.Value.UpdateBuild(state.RemainingBuildSeconds);
             }
+        }
+
+        public void RestorePresentation()
+        {
+            foreach (var plot in plots)
+            {
+                var state = construction.GetPlot(plot.PlotId);
+                if (state.State == PlotBuildState.Building)
+                {
+                    plot.BeginBuild();
+                    uiById[plot.PlotId].ShowBuilding();
+                }
+                else if (state.State == PlotBuildState.Ready) plot.MarkReady();
+            }
+        }
+
+        public void BindProgression(ProgressionService service, Canvas canvas, GameObject plotUpgradePrefab)
+        {
+            progression = service ?? throw new ArgumentNullException(nameof(service));
+            mainCanvas = canvas;
+            upgradePrefab = plotUpgradePrefab;
+            foreach (var plot in plots)
+                uiById[plot.PlotId].BindProgression(plot.PlotId, progression, wallet, mainCanvas, upgradePrefab);
         }
 
         private void OnBuildRequested(int plotId)
@@ -88,6 +117,8 @@ namespace Farm.UnityAdapters
             ConstructionVisible?.Invoke(plot);
         }
 
+        private void OnUpgradeRequested(PlotSlotView plot) => uiById[plot.PlotId].ShowUpgrade();
+
         public void Dispose()
         {
             if (!initialized) return;
@@ -98,8 +129,12 @@ namespace Farm.UnityAdapters
                 if (plot == null) continue;
                 plot.BuildRequested -= OnBuildRequested;
                 plot.ConstructionVisible -= OnConstructionVisible;
+                plot.UpgradeRequested -= OnUpgradeRequested;
                 if (uiById.TryGetValue(plot.PlotId, out var ui))
+                {
                     ui.UnlockConfirmed -= OnUnlockConfirmed;
+                    ui.UnbindProgression();
+                }
             }
             ConstructionVisible = null;
         }

@@ -16,14 +16,14 @@ namespace Farm.UnityAdapters
             if (wallet != null) wallet.BalanceChanged -= OnBalanceChanged;
             wallet = reader;
             wallet.BalanceChanged += OnBalanceChanged;
-            gemText.text = wallet.GetBalance(CurrencyId.Gem).ToString();
-            coinText.text = wallet.GetBalance(CurrencyId.Coin).ToString();
+            gemText.text = MoneyDisplayFormatter.FormatHud(wallet.GetBalance(CurrencyId.Gem));
+            coinText.text = MoneyDisplayFormatter.FormatHud(wallet.GetBalance(CurrencyId.Coin));
         }
 
         private void OnBalanceChanged(Money balance)
         {
-            if (balance.Currency == CurrencyId.Gem) gemText.text = balance.ToString();
-            if (balance.Currency == CurrencyId.Coin) coinText.text = balance.ToString();
+            if (balance.Currency == CurrencyId.Gem) gemText.text = MoneyDisplayFormatter.FormatHud(balance);
+            if (balance.Currency == CurrencyId.Coin) coinText.text = MoneyDisplayFormatter.FormatHud(balance);
         }
 
         public void Unbind()

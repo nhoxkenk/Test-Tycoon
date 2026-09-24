@@ -9,7 +9,7 @@ namespace Farm.Simulation
         private readonly HarvestService harvest;
         private readonly IWalletTransactions wallet;
 
-        public event Action<HarvestBatch> SaleCommitted;
+        public event Action<HarvestBatch, int> SaleCommitted;
 
         public MarketSaleService(HarvestService harvest, IWalletTransactions wallet)
         {
@@ -25,7 +25,7 @@ namespace Farm.Simulation
             if (!harvest.RemoveBatch(workerId, batch.Id))
                 throw new InvalidOperationException("Confirmed batch was already consumed.");
             wallet.Credit(batch.SaleValue);
-            SaleCommitted?.Invoke(batch);
+            SaleCommitted?.Invoke(batch, customerId);
             return true;
         }
     }

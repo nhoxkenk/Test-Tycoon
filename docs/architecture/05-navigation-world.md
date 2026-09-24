@@ -2,17 +2,17 @@
 
 [← Mục lục](README.md)
 
-**Trạng thái:** NavMesh adapter, world query, điểm Market và mặt đất NavMesh trong scene `Farm` đã được triển khai. Điểm resource sẽ do phần xây dựng cung cấp khi đăng ký worker.
+**Trạng thái:** Actor dùng A* Pathfinding Project (`AIPath` + `Seeker` + `FunnelModifier`) và `RVOController` để tránh va chạm cục bộ. Scene `Farm` có một `GridGraph`, `RVOSimulator` và `RVONavmesh`. Điểm resource do phần xây dựng cung cấp khi đăng ký worker.
 
 ## Bài toán
 
-Actor phải tìm đường, tránh/vượt chướng ngại và tới đúng điểm thu hoạch/quầy. AI Navigation đã có trong project.
+Actor phải tìm đường, tránh/vượt chướng ngại và tới đúng điểm thu hoạch/quầy. A* Pathfinding Project đã có trong project.
 
 ## Thiết kế đang đề xuất
 
-`ActorCoordinator` và `MarketLayout` ánh xạ resource/table slot sang điểm đến. Simulation truyền `WorldPoint` thuần C# cho `IActorNavigation`, nhận `Idle/Moving/Arrived/Unreachable`; `NavMeshAgentNavigation` ở UnityAdapters chuyển điểm đó thành `Vector3` và điều khiển `NavMeshAgent`. Simulation không tham chiếu UnityEngine.
+`ActorCoordinator` và `MarketLayout` ánh xạ resource/table slot sang điểm đến. Simulation truyền `WorldPoint` thuần C# cho `IActorNavigation`, nhận `Idle/Moving/Arrived/Unreachable`; `AstarActorNavigation` ở UnityAdapters chuyển điểm đó thành `Vector3` và điều khiển `AIPath`. Prefab worker/customer có `Seeker`, `FunnelModifier` và `RVOController`; `RVOSimulator` dùng chung trong scene tính tránh va chạm giữa các actor, còn `RVONavmesh` đưa biên GridGraph vào hệ tránh vật cản. Simulation không tham chiếu UnityEngine.
 
-`NavMeshWorldQuery` hiện thực `IWorldQuery.TryGetPathLength` bằng `NavMesh.CalculatePath`, chỉ trả độ dài khi có path hoàn chỉnh. Nó sẵn cho bước chọn resource/job về sau; không tính mỗi frame. Đích nằm ở interaction anchor, không tại tâm collider.
+`AstarWorldQuery` hiện thực `IWorldQuery.TryGetPathLength` bằng đường A* hoàn chỉnh, không tính mỗi frame. Đích nằm ở interaction anchor, không tại tâm collider. Adapter chỉ nhận anchor cách ô đi được tối đa 0,3 world unit theo mặt phẳng XZ và giữ nguyên XZ của anchor; anchor sai trả `Unreachable` thay vì âm thầm kéo actor sang vị trí khác. Khi actor về pool, callback path được tháo để không giữ trạng thái của lượt spawn cũ.
 
 ### Điểm đến và ownership
 
@@ -31,7 +31,7 @@ Không có đường tới resource/table/cashout/checkout thì adapter báo Unr
 
 ## Phương án và trade-off
 
-`WorldPoint` giữ Simulation thuần mà không cần gateway tra ID cho từng lệnh di chuyển. ID vẫn dùng để giữ ownership resource và table slot; UnityAdapters đổi anchor đã chọn thành `WorldPoint` lúc assign. NavMesh phù hợp layout này; chỉ thêm thuật toán khác nếu demo có yêu cầu không đáp ứng được.
+`WorldPoint` giữ Simulation thuần mà không cần gateway tra ID cho từng lệnh di chuyển. ID vẫn dùng để giữ ownership resource và table slot; UnityAdapters đổi anchor đã chọn thành `WorldPoint` lúc assign. `GridGraph` quét collider của quầy và hai khối giữa; mesh `Zone` trang trí không tham gia graph. RVO xử lý tránh actor đang di chuyển và biên vùng đi được. RVO không bảo đảm hai actor luôn vượt qua nhau trong lối hẹp hơn tổng đường kính của chúng, nên cần giữ đủ bề rộng lối đi.
 
 ## Điểm cần thảo luận
 

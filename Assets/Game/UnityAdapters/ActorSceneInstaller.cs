@@ -13,12 +13,15 @@ namespace Farm.UnityAdapters
         [SerializeField, Min(0)] private int initialCustomerCount = 1;
 
         public ActorCoordinator Coordinator { get; private set; }
+        public int InitialCustomerCount => initialCustomerCount;
         public IWorldQuery WorldQuery { get; private set; }
         public Transform WorkerOrigin => market != null ? market.WorkerOrigin : null;
         public event Action<int, int> HarvestRequested;
         public event Action<int, int> SaleRequested;
 
-        public bool Initialize()
+        public bool Initialize() => Initialize(initialCustomerCount);
+
+        public bool Initialize(int customerTarget)
         {
             if (Coordinator != null) return true;
             if (workerPrefab == null || customerPrefab == null || market == null || !market.Initialize())
@@ -31,11 +34,11 @@ namespace Farm.UnityAdapters
                 new WorkerFactory(workerPrefab, actorParent != null ? actorParent : transform),
                 new CustomerFactory(customerPrefab, actorParent != null ? actorParent : transform),
                 market);
-            WorldQuery = new NavMeshWorldQuery();
+            WorldQuery = new AstarWorldQuery();
             Coordinator.HarvestRequested += (workerId, resourceId) => HarvestRequested?.Invoke(workerId, resourceId);
             Coordinator.SaleRequested += (workerId, customerId) => SaleRequested?.Invoke(workerId, customerId);
-            Coordinator.TargetCustomerCount = initialCustomerCount;
-            return Coordinator.ActiveCustomerCount == initialCustomerCount;
+            Coordinator.TargetCustomerCount = Mathf.Max(0, customerTarget);
+            return Coordinator.ActiveCustomerCount == Mathf.Max(0, customerTarget);
         }
 
         public bool RegisterResource(int resourceId, Transform workerOrigin, Transform harvestPoint) =>
@@ -52,6 +55,12 @@ namespace Farm.UnityAdapters
             Coordinator != null && Coordinator.CompleteHarvest(workerId, quantity, fromPositions);
         public bool ConfirmSale(int workerId, int customerId, int quantity) =>
             Coordinator != null && Coordinator.ConfirmSale(workerId, customerId, quantity);
+        public bool TryGetCustomerPosition(int customerId, out Vector3 position)
+        {
+            if (Coordinator != null) return Coordinator.TryGetCustomerPosition(customerId, out position);
+            position = default;
+            return false;
+        }
         public void SetTargetCustomerCount(int count)
         {
             if (Coordinator != null) Coordinator.TargetCustomerCount = count;

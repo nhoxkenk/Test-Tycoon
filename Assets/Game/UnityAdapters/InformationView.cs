@@ -16,5 +16,7 @@ namespace Farm.UnityAdapters
             saleText.text = resource.BatchSaleValue;
             productionText.text = resource.ProductionText;
         }
+
+        public void SetSaleValue(string value) => saleText.text = value;
     }
 }

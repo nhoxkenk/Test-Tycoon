@@ -1,0 +1,8 @@
+{
+  "name": "Farm.Progression.Tests",
+  "rootNamespace": "Farm.Tests",
+  "references": ["Farm.Economy", "Farm.Farming", "Farm.Simulation", "Farm.UnityAdapters"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}

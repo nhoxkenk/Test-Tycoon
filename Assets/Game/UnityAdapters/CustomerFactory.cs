@@ -1,7 +1,7 @@
 using Farm.Actors;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.AI;
+using Pathfinding;
 
 namespace Farm.UnityAdapters
 {
@@ -22,7 +22,7 @@ namespace Farm.UnityAdapters
         {
             var actor = pool.Get();
             if (actor.Initialize(actorId, slotId, start, table, exit,
-                    new NavMeshAgentNavigation(actor.GetComponent<NavMeshAgent>()))) return actor;
+                    new AstarActorNavigation(actor.GetComponent<AIPath>()))) return actor;
             pool.Release(actor);
             return null;
         }

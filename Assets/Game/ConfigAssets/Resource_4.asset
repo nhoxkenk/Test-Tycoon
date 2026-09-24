@@ -23,3 +23,14 @@ MonoBehaviour:
   productionText: 30.0k/min
   upgradeCost: 10000
   profitPercentPerLevel: 25
+
+  levelUpgradeCosts:
+  - 10000
+  - 12500
+  - 15000
+  - 17500
+  - 20000
+  - 22500
+  - 25000
+  - 27500
+  - 30000

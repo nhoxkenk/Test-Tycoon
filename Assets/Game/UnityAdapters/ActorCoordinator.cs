@@ -25,6 +25,22 @@ namespace Farm.UnityAdapters
         public int ActiveCustomerCount => activeCustomers.Count;
         public int ActiveWorkerCount => activeWorkers.Count;
 
+        public bool TryGetCustomerPosition(int customerId, out Vector3 position)
+        {
+            if (activeCustomers.TryGetValue(customerId, out var customer) && customer != null)
+            {
+                position = customer.transform.position;
+                return true;
+            }
+            position = default;
+            return false;
+        }
+
+        public void AddCustomers(int count)
+        {
+            if (count > 0) TargetCustomerCount += count;
+        }
+
         public int TargetCustomerCount
         {
             get => targetCustomerCount;
@@ -120,7 +136,7 @@ namespace Farm.UnityAdapters
                 if (actor == null)
                 {
                     slotOwners[slot] = 0;
-                    Debug.LogError("Customer spawn point is not on a baked NavMesh.");
+                    Debug.LogError("Customer spawn point could not be placed on the A* graph.");
                     return;
                 }
                 activeCustomers.Add(actor.ActorId, actor);
@@ -202,3 +218,4 @@ namespace Farm.UnityAdapters
         }
     }
 }
+
