@@ -1,0 +1,7 @@
+{
+  "name": "Farm.Simulation",
+  "rootNamespace": "Farm.Simulation",
+  "references": ["Farm.Actors"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Farm.UnityAdapters",
+  "rootNamespace": "Farm.UnityAdapters",
+  "references": ["Farm.Actors", "Farm.Simulation"],
+  "autoReferenced": false
+}
